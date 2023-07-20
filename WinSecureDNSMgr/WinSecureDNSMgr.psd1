@@ -12,7 +12,7 @@
     RootModule           = 'WinSecureDNSMgr.psm1'
 
     # Version number of this module.
-    ModuleVersion        = '0.0.3'
+    ModuleVersion        = '0.0.4'
 
     # Supported PSEditions
     CompatiblePSEditions = @("Core")
@@ -56,6 +56,7 @@ It can automatically identify the correct and active network adapter/interface a
 ✅  - If 1st one fails, tries using the Cloudflare's secondary encrypted API to get the IP address(s) of the DoH server's domain.
 ✅  - If 2nd one fails, tries using Google's main encrypted API to get the IP address(s) of the DoH server's domain.
 ✅  - If 3rd one fails, tries using Google's secondary encrypted API to get the IP address(s) of the DoH server's domain.
+✅  - if 4th one fails, tries using any system DNS that is available to get the IP address(s) of the DoH server's domain.
 
 ✅ All of the connections to Cloudflare and Google servers use direct IP, are set to use TLS 1.3 with TLS_CHACHA20_POLY1305_SHA256 cipher suite and use HTTP/2
 
@@ -150,6 +151,12 @@ https://github.com/HotCakeX/WinSecureDNSMgr
 
             # ReleaseNotes of this module
             ReleaseNotes = @"
+
+# Version 0.0.4
+Added a fifth option for domain name resolution that falls back to system DNS if all other options fail.
+Set-DOH and Set-CDOH now remove the scheduled task created by Set-DDOH if it exists.
+Enhanced the code to handle cases where the server returns more than two IP addresses.
+
 # Version 0.0.3
 Simplified Set-CDOH function by automating a parameter, Streamlined the code, added custom colors to adapter selection area.
 

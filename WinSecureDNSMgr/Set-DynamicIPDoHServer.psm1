@@ -48,7 +48,7 @@ function Set-DynamicIPDoHServer {
       # Hyper-V assigns a new GUID to it, so it's better not to leave any leftover in the registry and clean up after ourselves
       Remove-item "HKLM:System\CurrentControlSet\Services\Dnscache\InterfaceSpecificParameters\*" -Recurse
           
-      $NewIPsV4 = Get-IPv4DoHServerIPAddressWinSecureDNSMgr -Domain $domain
+      [string[]]$NewIPsV4 = Get-IPv4DoHServerIPAddressWinSecureDNSMgr -Domain $domain
 
       # loop through each IPv4
       $NewIPsV4 | foreach-Object {
@@ -62,7 +62,7 @@ function Set-DynamicIPDoHServer {
         New-ItemProperty -Path $Path -Name "DohFlags" -Value 1 -PropertyType Qword -Force
       }
         
-      $NewIPsV6 = Get-IPv6DoHServerIPAddressWinSecureDNSMgr -Domain $domain
+      [string[]]$NewIPsV6 = Get-IPv6DoHServerIPAddressWinSecureDNSMgr -Domain $domain
 
       # loop through each IPv6
       $NewIPsV6 | foreach-Object {
@@ -77,7 +77,7 @@ function Set-DynamicIPDoHServer {
       }
 
       # gather IPv4s and IPv6s all in one place
-      $NewIPs = $NewIPsV4 + $NewIPsV6
+      [string[]]$NewIPs = $NewIPsV4 + $NewIPsV6
 
       # this is responsible for making the changes in Windows settings UI > Network and internet > $ActiveNetworkInterface.Name
       Set-DnsClientServerAddress -ServerAddresses $NewIPs -InterfaceIndex $ActiveNetworkInterface.ifIndex -ErrorAction Stop
@@ -86,7 +86,7 @@ function Set-DynamicIPDoHServer {
     }
 
     catch {
-      Write-host "these errors occured after running the module" -ForegroundColor white
+      Write-host "These errors occured after running the module" -ForegroundColor white
       $_
       $ModuleErrors = $_ 
     }

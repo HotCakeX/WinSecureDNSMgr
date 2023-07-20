@@ -142,6 +142,15 @@ function Set-CustomWinSecureDNS {
         Clear-DnsClientCache
 
         Write-Host "`nDNS over HTTPS has been successfully configured for $($ActiveNetworkInterface.Name) using $DoHTemplate template.`n" -ForegroundColor Green
+    
+        # Define the name and path of the task
+        $taskName = "Dynamic DoH Server IP check"
+        $taskPath = "\DDoH\"
+    
+        # Try to get the Dynamic DoH task and delete it if it exists
+        if (Get-ScheduledTask -TaskName $taskName -TaskPath $taskPath -ErrorAction SilentlyContinue) {
+            Unregister-ScheduledTask -TaskName $taskName -TaskPath $taskPath -Confirm:$false
+        }  
     }
     <#
 .SYNOPSIS

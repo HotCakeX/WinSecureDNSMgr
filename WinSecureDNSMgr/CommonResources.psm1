@@ -1,3 +1,10 @@
+# Functions for custom color writing
+function WriteViolet { Write-Host "$($PSStyle.Foreground.FromRGB(153,0,255))$($args[0])$($PSStyle.Reset)" -NoNewline }
+function WritePink { Write-Host "$($PSStyle.Foreground.FromRGB(255,0,230))$($args[0])$($PSStyle.Reset)" -NoNewline }
+function WriteLavender { Write-Host "$($PSStyle.Foreground.FromRgb(255,179,255))$($args[0])$($PSStyle.Reset)" -NoNewline }
+function WriteTeaGreen { Write-Host "$($PSStyle.Foreground.FromRgb(133, 222, 119))$($args[0])$($PSStyle.Reset)" -NoNewline }
+
+
 function Select-Option {
     param(
         [parameter(Mandatory = $true, Position = 0)][string]$Message,
@@ -29,7 +36,11 @@ Function Invoke-cURL {
     $IPs = ( $IPs | ConvertFrom-Json).answer.data
     return $IPs
 }
-    
+
+
+# Explicitly defining array type variable to store IP addresses
+$NewIPsV4 = @()
+
 Function Get-IPv4DoHServerIPAddressWinSecureDNSMgr {
     param ($domain)
   
@@ -49,8 +60,15 @@ Function Get-IPv4DoHServerIPAddressWinSecureDNSMgr {
         Write-Host "Third try failed, now using the second Encrypted Google API to to get IPv4s for $domain" -ForegroundColor DarkRed
         $NewIPsV4 = Invoke-cURL "https://8.8.4.4/resolve?name=$domain&type=A"
     }
+    if (!$NewIPsV4) {
+        Write-Host "Fourth try failed, using any available system DNS to get the IPv4s for $domain" -ForegroundColor Magenta
+        $NewIPsV4 = (Resolve-DnsName -Type A -Name "$domain" -NoHostsFile).ipaddress    
+    }
   
     if ($NewIPsV4) {
+        if ($NewIPsV4.count -gt 2) {
+            $NewIPsV4 = $NewIPsV4 | Select-Object -First 2
+        }  
         return $NewIPsV4
     }
     else {
@@ -58,6 +76,9 @@ Function Get-IPv4DoHServerIPAddressWinSecureDNSMgr {
         return $null
     } 
 }
+
+# Explicitly defining array type variable to store IP addresses
+$NewIPsV6 = @()
 
 Function Get-IPv6DoHServerIPAddressWinSecureDNSMgr {
     param ($domain)
@@ -78,8 +99,16 @@ Function Get-IPv6DoHServerIPAddressWinSecureDNSMgr {
         Write-Host "Third try failed, now using the second Encrypted Google API to to get IPv6s for $domain" -ForegroundColor DarkRed
         $NewIPsV6 = Invoke-cURL "https://8.8.4.4/resolve?name=$domain&type=AAAA"
     }
+    if (!$NewIPsV6) {
+        Write-Host "Fourth try failed, using any available system DNS to get the IPv6s for $domain" -ForegroundColor Magenta
+        $NewIPsV6 = (Resolve-DnsName -Type AAAA -Name "$domain" -NoHostsFile).ipaddress   
+    }
 
     if ($NewIPsV6) {
+        # in case server had more than 2 IP addresses
+        if ($NewIPsV6.count -gt 2) {
+            $NewIPsV6 = $NewIPsV6 | Select-Object -First 2
+        }        
         return $NewIPsV6
     }
     else {
@@ -88,8 +117,3 @@ Function Get-IPv6DoHServerIPAddressWinSecureDNSMgr {
     }
 }
 
-# Functions for custom color writing
-function WriteViolet { Write-Host "$($PSStyle.Foreground.FromRGB(153,0,255))$($args[0])$($PSStyle.Reset)" -NoNewline }
-function WritePink { Write-Host "$($PSStyle.Foreground.FromRGB(255,0,230))$($args[0])$($PSStyle.Reset)" -NoNewline }
-function WriteLavender { Write-Host "$($PSStyle.Foreground.FromRgb(255,179,255))$($args[0])$($PSStyle.Reset)" -NoNewline }
-function WriteTeaGreen { Write-Host "$($PSStyle.Foreground.FromRgb(133, 222, 119))$($args[0])$($PSStyle.Reset)" -NoNewline }

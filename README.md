@@ -120,7 +120,9 @@ That means it will detect the correct network adapter/interface even if you are 
 
 <img src="https://raw.githubusercontent.com/HotCakeX/Harden-Windows-Security/main/images/WebP/911587042608156732.webp" width="20"> If 3rd one fails, tries using Google's secondary encrypted API to get the IP address(s) of the DoH server's domain.
 
-<img src="https://raw.githubusercontent.com/HotCakeX/Harden-Windows-Security/main/images/WebP/911587042608156732.webp" width="30"> All of the connections to Cloudflare and Google servers use direct IP, are set to use [TLS 1.3](https://curl.se/docs/manpage.html#--tls13-ciphers) with [TLS_CHACHA20_POLY1305_SHA256](https://curl.se/docs/ssl-ciphers.html) cipher suite and use `HTTP/2`
+<img src="https://raw.githubusercontent.com/HotCakeX/Harden-Windows-Security/main/images/WebP/911587042608156732.webp" width="20"> if 4th one fails, tries using any system DNS that is available to get the IP address(s) of the DoH server's domain.
+
+<img src="https://raw.githubusercontent.com/HotCakeX/Harden-Windows-Security/main/images/WebP/911587042608156732.webp" width="30"> All of the connections to Cloudflare and Google servers use direct IP, are set to use [TLS 1.3](https://curl.se/docs/manpage.html#--tls13-ciphers) with [TLS_CHACHA20_POLY1305_SHA256](https://curl.se/docs/ssl-ciphers.html) cipher suite and use `HTTP/2`, with the exception of the last try which uses system DNS.
 
 <br>
 
