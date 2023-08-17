@@ -14,9 +14,9 @@ function Select-Option {
     while ($null -eq $Selected) {
         Write-Host $Message -ForegroundColor Magenta
         for ($i = 0; $i -lt $Options.Length; $i++) { Write-Host "$($i+1): $($Options[$i])" }
-        $SelectedIndex = Read-Host "Select an option"
+        $SelectedIndex = Read-Host 'Select an option'
         if ($SelectedIndex -gt 0 -and $SelectedIndex -le $Options.Length) { $Selected = $Options[$SelectedIndex - 1] }
-        else { Write-Host "Invalid Option." -ForegroundColor Yellow }
+        else { Write-Host 'Invalid Option.' -ForegroundColor Yellow }
     }
     return $Selected
 }
@@ -29,10 +29,10 @@ Function Invoke-cURL {
 
     # Enables "TLS_CHACHA20_POLY1305_SHA256" Cipher Suite for Windows 11, if necessary, because it's disabled by default
     # cURL will need that cipher suite to perform encrypted DNS query, it uses Windows Schannel
-    if (-NOT ((Get-TlsCipherSuite).name -contains "TLS_CHACHA20_POLY1305_SHA256"))
-    { Enable-TlsCipherSuite -Name "TLS_CHACHA20_POLY1305_SHA256" }
+    if (-NOT ((Get-TlsCipherSuite).name -contains 'TLS_CHACHA20_POLY1305_SHA256'))
+    { Enable-TlsCipherSuite -Name 'TLS_CHACHA20_POLY1305_SHA256' }
     
-    $IPs = curl --ssl-no-revoke --max-time 10 --tlsv1.3 --tls13-ciphers TLS_CHACHA20_POLY1305_SHA256 --http2 -H "accept: application/dns-json" $url;
+    $IPs = curl --ssl-no-revoke --max-time 10 --tlsv1.3 --tls13-ciphers TLS_CHACHA20_POLY1305_SHA256 --http2 -H 'accept: application/dns-json' $url
     $IPs = ( $IPs | ConvertFrom-Json).answer.data
     return $IPs
 }

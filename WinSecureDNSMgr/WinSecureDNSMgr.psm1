@@ -6,7 +6,7 @@ Import-Module -Name "$psscriptroot\Get-ManualNetworkAdapterWinSecureDNS.psm1" -F
 Import-Module -Name "$psscriptroot\CommonResources.psm1" -Force -Global
 
 # Set PSReadline tab completion to complete menu for easier access to available parameters - Only for the current session
-Set-PSReadlineKeyHandler -Key Tab -Function MenuComplete
+Set-PSReadLineKeyHandler -Key Tab -Function MenuComplete
 
 # Stopping the module process if any error occurs
 $ErrorActionPreference = 'Stop'

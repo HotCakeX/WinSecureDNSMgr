@@ -13,7 +13,7 @@ function Get-ActiveNetworkAdapterWinSecureDNS {
             # then we get the 2nd adapter from the top
             $ActiveNetworkInterface = Get-NetRoute -DestinationPrefix '0.0.0.0/0', '::/0' -ErrorAction SilentlyContinue |
             Sort-Object -Property { $_.InterfaceMetric + $_.RouteMetric } -Top 2 |
-            Select-Object -skip 1 | select-Object -first 1 -PipelineVariable ActiveAdapter | 
+            Select-Object -Skip 1 | Select-Object -First 1 -PipelineVariable ActiveAdapter | 
             Get-NetAdapter | Where-Object { $_.ifIndex -eq $ActiveAdapter.ifIndex }
         }
         # if the top most adapter that we got has an interface index
@@ -23,7 +23,7 @@ function Get-ActiveNetworkAdapterWinSecureDNS {
                 Write-Debug "Interface is virtual, trying to find out if it's a VPN virtual adapter or Hyper-V External virtual switch"
 
                 # if it's an external virtual Hyper-V network adapter, it must be the correct adapter
-                if ($ActiveNetworkInterface.InterfaceDescription -like "*Hyper-V Virtual Ethernet Adapter*"  ) {
+                if ($ActiveNetworkInterface.InterfaceDescription -like '*Hyper-V Virtual Ethernet Adapter*'  ) {
                     Write-Debug "The detected active network adapter is virtual, it's Hyper-V External switch"
                     $ActiveNetworkInterface = $ActiveNetworkInterface
                 } 
@@ -31,15 +31,15 @@ function Get-ActiveNetworkAdapterWinSecureDNS {
                 # choose the second prioritized adapter/interface based on route metric
                 # tested with Cloudflare WARP (that doesn't create a separate adapter), Wintun, TAP, OpenVPN and has been always successful in detecting the correct network adapter/interface         
                 else {
-                    Write-Debug "Detected active network adapter is virtual but not virtual Hyper-V adapter, most likely a VPN virtual network adapter, choosing the second prioritized adapter/interface based on route metric"
+                    Write-Debug 'Detected active network adapter is virtual but not virtual Hyper-V adapter, most likely a VPN virtual network adapter, choosing the second prioritized adapter/interface based on route metric'
                     $ActiveNetworkInterface = Get-NetRoute -DestinationPrefix '0.0.0.0/0', '::/0' -ErrorAction SilentlyContinue |
                     Sort-Object -Property { $_.InterfaceMetric + $_.RouteMetric } -Top 2 |
-                    select-Object -skip 1 | select-Object -first 1 -PipelineVariable ActiveAdapter | 
+                    Select-Object -Skip 1 | Select-Object -First 1 -PipelineVariable ActiveAdapter | 
                     Get-NetAdapter | Where-Object { $_.ifIndex -eq $ActiveAdapter.ifIndex }
                 }
             }
         }
-        Write-Debug "This is the automatically detected network adapter this script is going to set Secure DNS for"
+        Write-Debug 'This is the automatically detected network adapter this script is going to set Secure DNS for'
         return $ActiveNetworkInterface
     }
     catch { 

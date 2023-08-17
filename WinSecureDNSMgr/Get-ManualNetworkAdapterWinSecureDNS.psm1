@@ -12,22 +12,22 @@ function Get-ManualNetworkAdapterWinSecureDNS {
 
     # Creating a heading for the columns
     # Write the index of the adapter
-    WriteLavender ("{0,-5}" -f "#")
+    WriteLavender ('{0,-5}' -f '#')
     # Write the name of the adapter in cyan
-    WriteTeaGreen ("|{0,-$NameLength}" -f "Name")
+    WriteTeaGreen ("|{0,-$NameLength}" -f 'Name')
     # Write the interface description of the adapter in yellow
-    WritePink ("|{0,-$DescriptionLength}" -f "Description")
+    WritePink ("|{0,-$DescriptionLength}" -f 'Description')
     # Write the MAC address of the adapter in green
-    WriteViolet ("|{0,-$MacLength}" -f "Mac Addr")
+    WriteViolet ("|{0,-$MacLength}" -f 'Mac Addr')
     # Write the status of the adapter in red
-    Write-Host ("|{0,-8}" -f "Status") -NoNewline -ForegroundColor Red
+    Write-Host ('|{0,-8}' -f 'Status') -NoNewline -ForegroundColor Red
     # Write the link speed of the adapter in magenta
-    Write-Host ("|{0,-$LinkLength}" -f "Speed") -ForegroundColor Magenta
+    Write-Host ("|{0,-$LinkLength}" -f 'Speed') -ForegroundColor Magenta
 
     # Loop through the adapters and display them in a table with colors
     for ($i = 0; $i -lt $Adapters.Count; $i++) {
         # Write the index of the adapter
-        WriteLavender ("{0,-5}" -f ($i + 1))
+        WriteLavender ('{0,-5}' -f ($i + 1))
         # Write the name of the adapter in cyan
         WriteTeaGreen ("|{0,-$NameLength}" -f $Adapters[$i].Name)
         # Write the interface description of the adapter in yellow
@@ -35,7 +35,7 @@ function Get-ManualNetworkAdapterWinSecureDNS {
         # Write the MAC address of the adapter in green
         WriteViolet ("|{0,-$MacLength}" -f $Adapters[$i].MacAddress)
         # Write the status of the adapter in red
-        Write-Host ("|{0,-8}" -f $Adapters[$i].Status) -NoNewline -ForegroundColor Red
+        Write-Host ('|{0,-8}' -f $Adapters[$i].Status) -NoNewline -ForegroundColor Red
         # Write the link speed of the adapter in magenta
         Write-Host ("|{0,-$LinkLength}" -f $Adapters[$i].LinkSpeed) -ForegroundColor Magenta
     }
@@ -44,8 +44,8 @@ function Get-ManualNetworkAdapterWinSecureDNS {
     $ExitCodeAdapterSelection = $Adapters.Count + 1
 
     # Write an exit option at the end of the table
-    Write-Host ("{0,-5}" -f "$ExitCodeAdapterSelection") -NoNewline -ForegroundColor DarkRed
-    Write-Host "|Cancel" -ForegroundColor DarkRed
+    Write-Host ('{0,-5}' -f "$ExitCodeAdapterSelection") -NoNewline -ForegroundColor DarkRed
+    Write-Host '|Cancel' -ForegroundColor DarkRed
 
     # Define a function to validate the user input
     function Confirm-Choice {
@@ -79,7 +79,7 @@ function Get-ManualNetworkAdapterWinSecureDNS {
     # Check if the user entered the exit value to break out of the loop
     if ($Choice -eq $ExitCodeAdapterSelection) {
         # Write a message in white and break out of the loop
-        Write-Host "Exiting..." -ForegroundColor Magenta
+        Write-Host 'Exiting...' -ForegroundColor Magenta
         # Send False flag to the caller function to indicate that the user cancelled the operation        
         return $false
         break

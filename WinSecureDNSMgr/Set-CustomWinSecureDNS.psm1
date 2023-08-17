@@ -1,10 +1,10 @@
 function Set-CustomWinSecureDNS {
-    [Alias("Set-CDOH")]
+    [Alias('Set-CDOH')]
     [CmdletBinding(SupportsShouldProcess = $true)]
     param (
         # checking to make sure the DoH template is valid and not one of the built-in ones
-        [ValidatePattern("^https\:\/\/.+\..+\/.*", ErrorMessage = "The value provided for the parameter DoHTemplate is not a valid DNS over HTTPS template. Please enter a valid DNS over HTTPS template that starts with https, has a TLD and a slash after it. E.g.: https://template.com/")]
-        [ValidateScript({ $_ -notmatch "https://(cloudflare-dns|dns\.google|dns\.quad9)\.com/dns-query" }, ErrorMessage = "The DoH template you selected is one of the Windows built-in ones. Please select a different DoH template or use the Set-BuiltInWinSecureDNS cmdlet.")]
+        [ValidatePattern('^https\:\/\/.+\..+\/.*', ErrorMessage = 'The value provided for the parameter DoHTemplate is not a valid DNS over HTTPS template. Please enter a valid DNS over HTTPS template that starts with https, has a TLD and a slash after it. E.g.: https://template.com/')]
+        [ValidateScript({ $_ -notmatch 'https://(cloudflare-dns|dns\.google|dns\.quad9)\.com/dns-query' }, ErrorMessage = 'The DoH template you selected is one of the Windows built-in ones. Please select a different DoH template or use the Set-BuiltInWinSecureDNS cmdlet.')]
         [Parameter(Mandatory)][string]$DoHTemplate,
         
         # The parameter can either accept 1 or 2 IPv4 addresses
@@ -19,10 +19,10 @@ function Set-CustomWinSecureDNS {
 
         # If IP addresses were provided manually by user, verify their version
         if ($IPV4s) {
-            $IPV4s | ForEach-Object { if ($_.AddressFamily -ne "InterNetwork") { throw "The IP address $_ is not a valid IPv4 address." } }
+            $IPV4s | ForEach-Object { if ($_.AddressFamily -ne 'InterNetwork') { throw "The IP address $_ is not a valid IPv4 address." } }
         }
         if ($IPV6s) {
-            $IPV6s | ForEach-Object { if ($_.AddressFamily -ne "InterNetworkV6") { throw "The IP address $_ is not a valid IPv6 address." } }
+            $IPV6s | ForEach-Object { if ($_.AddressFamily -ne 'InterNetworkV6') { throw "The IP address $_ is not a valid IPv6 address." } }
         }  
 
         # if no IP addresses were provided manually by user, set the $AutoDetectDoHIPs variable to $true
@@ -34,15 +34,15 @@ function Set-CustomWinSecureDNS {
         $ActiveNetworkInterface = Get-ActiveNetworkAdapterWinSecureDNS 
         $ActiveNetworkInterface
 
-        switch (Select-Option -Options "Yes", "No - Select Manually", "Cancel" -Message "`nIs the detected network adapter correct ?") {
-            "Yes" {
+        switch (Select-Option -Options 'Yes', 'No - Select Manually', 'Cancel' -Message "`nIs the detected network adapter correct ?") {
+            'Yes' {
                 $ActiveNetworkInterface = $ActiveNetworkInterface
             }
-            "No - Select Manually" {
+            'No - Select Manually' {
                 # Detect the active network adapter manually
                 $ActiveNetworkInterface = Get-ManualNetworkAdapterWinSecureDNS          
             } # properly exiting this advanced function is a bit tricky, so we use a variable to control the loop
-            "Cancel" { $ShouldExit = $true; return } 
+            'Cancel' { $ShouldExit = $true; return } 
         }
         
         # if user chose to cancel the Get-ManualNetworkAdapterWinSecureDNS function, set the $shouldExit variable to $true and exit the function in the Process block
@@ -81,14 +81,14 @@ function Set-CustomWinSecureDNS {
         # if there is, remove them
         if ($oldIPs) {
             $oldIPs | ForEach-Object {
-                remove-DnsClientDohServerAddress -ServerAddress $_
+                Remove-DnsClientDohServerAddress -ServerAddress $_
             }
         }
 
         # check if the IP addresses of the currently selected domain already exist and then delete them
         Get-DnsClientDohServerAddress | ForEach-Object {
             if ($_.ServerAddress -in $IPV4s -or $_.ServerAddress -in $IPV6s) {
-                remove-DnsClientDohServerAddress -ServerAddress $_.ServerAddress
+                Remove-DnsClientDohServerAddress -ServerAddress $_.ServerAddress
                 $_
             }
         }                       
@@ -99,11 +99,11 @@ function Set-CustomWinSecureDNS {
         # delete all other previous DoH settings for ALL Interface - Windows behavior in settings when changing DoH settings is to delete all DoH settings for the interface we are modifying 
         # but we need to delete all DoH settings for ALL interfaces in here because every time we virtualize a network adapter with external switch of Hyper-V,
         # Hyper-V assigns a new GUID to it, so it's better not to leave any leftover in the registry and clean up after ourselves
-        Remove-item "HKLM:System\CurrentControlSet\Services\Dnscache\InterfaceSpecificParameters\*" -Recurse    
+        Remove-Item 'HKLM:System\CurrentControlSet\Services\Dnscache\InterfaceSpecificParameters\*' -Recurse    
 
         if ($null -ne $IPV4s) {
             # loop through each IPv4
-            $IPV4s | foreach-Object {
+            $IPV4s | ForEach-Object {
                 # defining registry path for DoH settings of the $ActiveNetworkInterface based on its GUID for IPv4
                 $Path = "HKLM:System\CurrentControlSet\Services\Dnscache\InterfaceSpecificParameters\$($ActiveNetworkInterface.InterfaceGuid)\DohInterfaceSettings\Doh\$_"
                 # associating the new IPv4s with our DoH template in Windows DoH template predefined list
@@ -111,14 +111,14 @@ function Set-CustomWinSecureDNS {
                 # add DoH settings for the specified Network adapter based on its GUID in registry
                 # value 1 for DohFlags key means use automatic template for DoH, 2 means manual template, since we add our template to Windows, it's predefined so we use value 1
                 New-Item -Path $Path -Force | Out-Null  
-                New-ItemProperty -Path $Path -Name "DohFlags" -Value 1 -PropertyType Qword -Force
+                New-ItemProperty -Path $Path -Name 'DohFlags' -Value 1 -PropertyType Qword -Force
             }
         }
    
         # Making sure the DoH server supports and has IPv6 addresses
         if ($null -ne $IPV6s) {
             # loop through each IPv6
-            $IPV6s | foreach-Object {
+            $IPV6s | ForEach-Object {
                 # defining registry path for DoH settings of the $ActiveNetworkInterface based on its GUID for IPv6
                 $Path = "HKLM:System\CurrentControlSet\Services\Dnscache\InterfaceSpecificParameters\$($ActiveNetworkInterface.InterfaceGuid)\DohInterfaceSettings\Doh6\$_"
                 # associating the new IPv6s with our DoH template in Windows DoH template predefined list
@@ -126,7 +126,7 @@ function Set-CustomWinSecureDNS {
                 # add DoH settings for the specified Network adapter based on its GUID in registry
                 # value 1 for DohFlags key means use automatic template for DoH, 2 means manual template, since we already added our template to Windows, it's considered predefined, so we use value 1
                 New-Item -Path $Path -Force | Out-Null  
-                New-ItemProperty -Path $Path -Name "DohFlags" -Value 1 -PropertyType Qword -Force
+                New-ItemProperty -Path $Path -Name 'DohFlags' -Value 1 -PropertyType Qword -Force
             }
         }
         # gather IPv4s and IPv6s all in one place
@@ -144,8 +144,8 @@ function Set-CustomWinSecureDNS {
         Write-Host "`nDNS over HTTPS has been successfully configured for $($ActiveNetworkInterface.Name) using $DoHTemplate template.`n" -ForegroundColor Green
     
         # Define the name and path of the task
-        $taskName = "Dynamic DoH Server IP check"
-        $taskPath = "\DDoH\"
+        $taskName = 'Dynamic DoH Server IP check'
+        $taskPath = '\DDoH\'
     
         # Try to get the Dynamic DoH task and delete it if it exists
         if (Get-ScheduledTask -TaskName $taskName -TaskPath $taskPath -ErrorAction SilentlyContinue) {

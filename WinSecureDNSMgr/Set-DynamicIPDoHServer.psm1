@@ -1,10 +1,10 @@
 function Set-DynamicIPDoHServer {
-  [Alias("Set-DDOH")]
+  [Alias('Set-DDOH')]
   [CmdletBinding(SupportsShouldProcess = $true)]
   param (
     # checking to make sure the DoH template is valid and not one of the built-in ones
-    [ValidatePattern("^https\:\/\/.+\..+\/.*", ErrorMessage = "The value provided for the parameter DoHTemplate is not a valid DNS over HTTPS template. Please enter a valid DNS over HTTPS template that starts with https, has a TLD and a slash after it. E.g.: https://template.com/")]
-    [ValidateScript({ $_ -notmatch "https://(cloudflare-dns|dns\.google|dns\.quad9)\.com/dns-query" }, ErrorMessage = "The DoH template you selected is one of the Windows built-in ones. Please select a different DoH template or use the Set-BuiltInWinSecureDNS cmdlet.")]
+    [ValidatePattern('^https\:\/\/.+\..+\/.*', ErrorMessage = 'The value provided for the parameter DoHTemplate is not a valid DNS over HTTPS template. Please enter a valid DNS over HTTPS template that starts with https, has a TLD and a slash after it. E.g.: https://template.com/')]
+    [ValidateScript({ $_ -notmatch 'https://(cloudflare-dns|dns\.google|dns\.quad9)\.com/dns-query' }, ErrorMessage = 'The DoH template you selected is one of the Windows built-in ones. Please select a different DoH template or use the Set-BuiltInWinSecureDNS cmdlet.')]
     [Parameter(Mandatory)][string]$DoHTemplate
   ) 
 
@@ -28,7 +28,7 @@ function Set-DynamicIPDoHServer {
     try {
 
       $ActiveNetworkInterface = Get-ActiveNetworkAdapterWinSecureDNS
-      Write-host "This is the final detected network adapter this module is going to set Secure DNS for" -ForegroundColor DarkMagenta
+      Write-Host 'This is the final detected network adapter this module is going to set Secure DNS for' -ForegroundColor DarkMagenta
       $ActiveNetworkInterface
 
       # check if there is any IP address already associated with "$DoHTemplate" template
@@ -46,12 +46,12 @@ function Set-DynamicIPDoHServer {
       # delete all other previous DoH settings for ALL Interface - Windows behavior in settings when changing DoH settings is to delete all DoH settings for the interface we are modifying 
       # but we need to delete all DoH settings for ALL interfaces in here because every time we virtualize a network adapter with external switch of Hyper-V,
       # Hyper-V assigns a new GUID to it, so it's better not to leave any leftover in the registry and clean up after ourselves
-      Remove-item "HKLM:System\CurrentControlSet\Services\Dnscache\InterfaceSpecificParameters\*" -Recurse
+      Remove-Item 'HKLM:System\CurrentControlSet\Services\Dnscache\InterfaceSpecificParameters\*' -Recurse
           
       [string[]]$NewIPsV4 = Get-IPv4DoHServerIPAddressWinSecureDNSMgr -Domain $domain
 
       # loop through each IPv4
-      $NewIPsV4 | foreach-Object {
+      $NewIPsV4 | ForEach-Object {
         # defining registry path for DoH settings of the $ActiveNetworkInterface based on its GUID for IPv4
         $Path = "HKLM:System\CurrentControlSet\Services\Dnscache\InterfaceSpecificParameters\$($ActiveNetworkInterface.InterfaceGuid)\DohInterfaceSettings\Doh\$_"
         # associating the new IPv4s with our DoH template in Windows DoH template predefined list
@@ -59,13 +59,13 @@ function Set-DynamicIPDoHServer {
         # add DoH settings for the specified Network adapter based on its GUID in registry
         # value 1 for DohFlags key means use automatic template for DoH, 2 means manual template, since we add our template to Windows, it's predefined so we use value 1
         New-Item -Path $Path -Force | Out-Null  
-        New-ItemProperty -Path $Path -Name "DohFlags" -Value 1 -PropertyType Qword -Force
+        New-ItemProperty -Path $Path -Name 'DohFlags' -Value 1 -PropertyType Qword -Force
       }
         
       [string[]]$NewIPsV6 = Get-IPv6DoHServerIPAddressWinSecureDNSMgr -Domain $domain
 
       # loop through each IPv6
-      $NewIPsV6 | foreach-Object {
+      $NewIPsV6 | ForEach-Object {
         # defining registry path for DoH settings of the $ActiveNetworkInterface based on its GUID for IPv6
         $Path = "HKLM:System\CurrentControlSet\Services\Dnscache\InterfaceSpecificParameters\$($ActiveNetworkInterface.InterfaceGuid)\DohInterfaceSettings\Doh6\$_"
         # associating the new IPv6s with our DoH template in Windows DoH template predefined list
@@ -73,7 +73,7 @@ function Set-DynamicIPDoHServer {
         # add DoH settings for the specified Network adapter based on its GUID in registry
         # value 1 for DohFlags key means use automatic template for DoH, 2 means manual template, since we already added our template to Windows, it's considered predefined, so we use value 1
         New-Item -Path $Path -Force | Out-Null  
-        New-ItemProperty -Path $Path -Name "DohFlags" -Value 1 -PropertyType Qword -Force
+        New-ItemProperty -Path $Path -Name 'DohFlags' -Value 1 -PropertyType Qword -Force
       }
 
       # gather IPv4s and IPv6s all in one place
@@ -86,7 +86,7 @@ function Set-DynamicIPDoHServer {
     }
 
     catch {
-      Write-host "These errors occured after running the module" -ForegroundColor white
+      Write-Host 'These errors occured after running the module' -ForegroundColor white
       $_
       $ModuleErrors = $_ 
     }
@@ -107,18 +107,18 @@ function Set-DynamicIPDoHServer {
       Write-Debug "No errors occured when running the module, creating the scheduled task now if it's not already been created" 
       
       # create a scheduled task    
-      $Action = New-ScheduledTaskAction -Execute "pwsh.exe" -Argument "-executionPolicy bypass -command `"Set-DynamicIPDoHServer -DoHTemplate '$DoHTemplate'`""
+      $Action = New-ScheduledTaskAction -Execute 'pwsh.exe' -Argument "-executionPolicy bypass -command `"Set-DynamicIPDoHServer -DoHTemplate '$DoHTemplate'`""
       $TaskPrincipal = New-ScheduledTaskPrincipal -LogonType S4U -UserId $env:USERNAME -RunLevel Highest
       # trigger 1
       $CIMTriggerClass =
       Get-CimClass -ClassName MSFT_TaskEventTrigger -Namespace Root/Microsoft/Windows/TaskScheduler:MSFT_TaskEventTrigger
       $EventTrigger = New-CimInstance -CimClass $CIMTriggerClass -ClientOnly
       $EventTrigger.Subscription =
-      @"
+      @'
 <QueryList><Query Id="0" Path="Microsoft-Windows-DNS-Client/Operational"><Select Path="Microsoft-Windows-DNS-Client/Operational">*[System[Provider[@Name='Microsoft-Windows-DNS-Client'] and EventID=1013]]</Select></Query></QueryList>
-"@
+'@
       $EventTrigger.Enabled = $True
-      $EventTrigger.ExecutionTimeLimit = "PT1M"
+      $EventTrigger.ExecutionTimeLimit = 'PT1M'
       # trigger 2
       $Time = 
       New-ScheduledTaskTrigger `
@@ -126,11 +126,11 @@ function Set-DynamicIPDoHServer {
         -RandomDelay (New-TimeSpan -Seconds 30) `
         -RepetitionInterval (New-TimeSpan -Hours 6) `
         # register the task
-        Register-ScheduledTask -Action $Action -Trigger $EventTrigger, $Time -Principal $TaskPrincipal -TaskPath "DDoH" -TaskName "Dynamic DoH Server IP check" -Description "Checks for New IPs of our Dynamic DoH server" -Force
+        Register-ScheduledTask -Action $Action -Trigger $EventTrigger, $Time -Principal $TaskPrincipal -TaskPath 'DDoH' -TaskName 'Dynamic DoH Server IP check' -Description 'Checks for New IPs of our Dynamic DoH server' -Force
       # define advanced settings for the task
       $TaskSettings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -Compatibility Win8 -StartWhenAvailable -ExecutionTimeLimit (New-TimeSpan -Minutes 1)
       # add advanced settings we defined to the task
-      Set-ScheduledTask -TaskPath "DDoH" -TaskName "Dynamic DoH Server IP check" -Settings $TaskSettings 
+      Set-ScheduledTask -TaskPath 'DDoH' -TaskName 'Dynamic DoH Server IP check' -Settings $TaskSettings 
      
     }
   }

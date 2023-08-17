@@ -15,7 +15,7 @@
     ModuleVersion        = '0.0.4'
 
     # Supported PSEditions
-    CompatiblePSEditions = @("Core")
+    CompatiblePSEditions = @('Core')
 
     # ID used to uniquely identify this module
     GUID                 = 'e8b709e5-6ccc-471c-9625-edf2bca4ebee'
@@ -30,7 +30,7 @@
     Copyright            = '(c) HotCakeX. All rights reserved.'
 
     # Description of the functionality provided by this module
-    Description          = @"
+    Description          = @'
 
     
 💎 This is a PowerShell module that can simplify setting up DNS over HTTPS in Windows for various scenarios 💎
@@ -64,7 +64,7 @@ More info about each of them in the GitHub repository
 https://github.com/HotCakeX/WinSecureDNSMgr
 
 
-"@
+'@
 
     # Minimum version of the PowerShell engine required by this module
     PowerShellVersion    = '7.3.4'
@@ -150,7 +150,7 @@ https://github.com/HotCakeX/WinSecureDNSMgr
             IconUri      = 'https://raw.githubusercontent.com/HotCakeX/Windows-Secure-DNS-Config/main/PowerShellGalleryIcon.png'
 
             # ReleaseNotes of this module
-            ReleaseNotes = @"
+            ReleaseNotes = @'
 
 # Version 0.0.4
 Added a fifth option for domain name resolution that falls back to system DNS if all other options fail.
@@ -166,7 +166,7 @@ Added some successful messages to be displayed at the end of the execution
 # Version 0.0.1
 First release
 
-"@
+'@
 
             # Prerelease string of this module
             # Prerelease = ''
