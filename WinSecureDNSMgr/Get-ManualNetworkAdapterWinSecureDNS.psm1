@@ -80,7 +80,7 @@ function Get-ManualNetworkAdapterWinSecureDNS {
     if ($Choice -eq $ExitCodeAdapterSelection) {
         # Write a message in white and break out of the loop
         Write-Host 'Exiting...' -ForegroundColor Magenta
-        # Send False flag to the caller function to indicate that the user cancelled the operation        
+        # Send False flag to the caller function to indicate that the user cancelled the operation
         return $false
         break
     }
@@ -88,5 +88,5 @@ function Get-ManualNetworkAdapterWinSecureDNS {
         # Get the selected adapter from the array and display it
         $ActiveNetworkInterface = $Adapters[$Choice - 1]
         return $ActiveNetworkInterface
-    }            
+    }
 }

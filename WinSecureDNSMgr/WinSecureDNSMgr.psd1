@@ -32,7 +32,7 @@
     # Description of the functionality provided by this module
     Description          = @'
 
-    
+
 💎 This is a PowerShell module that can simplify setting up DNS over HTTPS in Windows for various scenarios 💎
 
 
@@ -129,7 +129,7 @@ https://github.com/HotCakeX/WinSecureDNSMgr
         'CommonResources.psm1',
         'Set-BuiltInWinSecureDNS.psm1',
         'Set-CustomWinSecureDNS.psm1',
-        'Set-DynamicIPDoHServer.psm1'        
+        'Set-DynamicIPDoHServer.psm1'
     )
 
     # Private data to pass to the module specified in RootModule/ModuleToProcess. This may also contain a PSData hashtable with additional module metadata used by PowerShell.

@@ -23,15 +23,15 @@ function Select-Option {
 
 
 # we use --ssl-no-revoke because when system DNS is unreachable, CRL check will fail in cURL.
-# it is OKAY, we're using trusted Cloudflare and Google servers the certificates of which explicitly mention their IP addresses (in Subject Alternative Name) that we are using to connect to them      
-Function Invoke-cURL { 
+# it is OKAY, we're using trusted Cloudflare and Google servers the certificates of which explicitly mention their IP addresses (in Subject Alternative Name) that we are using to connect to them
+Function Invoke-cURL {
     param($url)
 
     # Enables "TLS_CHACHA20_POLY1305_SHA256" Cipher Suite for Windows 11, if necessary, because it's disabled by default
     # cURL will need that cipher suite to perform encrypted DNS query, it uses Windows Schannel
     if (-NOT ((Get-TlsCipherSuite).name -contains 'TLS_CHACHA20_POLY1305_SHA256'))
     { Enable-TlsCipherSuite -Name 'TLS_CHACHA20_POLY1305_SHA256' }
-    
+
     $IPs = curl --ssl-no-revoke --max-time 10 --tlsv1.3 --tls13-ciphers TLS_CHACHA20_POLY1305_SHA256 --http2 -H 'accept: application/dns-json' $url
     $IPs = ( $IPs | ConvertFrom-Json).answer.data
     return $IPs
@@ -43,11 +43,11 @@ $NewIPsV4 = @()
 
 Function Get-IPv4DoHServerIPAddressWinSecureDNSMgr {
     param ($domain)
-  
+
     # get the new IPv4s for $domain
     Write-Host "Using the main Cloudflare Encrypted API to resolve $domain" -ForegroundColor Green
-    $NewIPsV4 = Invoke-cURL "https://1.1.1.1/dns-query?name=$domain&type=A"    
-    
+    $NewIPsV4 = Invoke-cURL "https://1.1.1.1/dns-query?name=$domain&type=A"
+
     if (!$NewIPsV4) {
         Write-Host "First try failed, now using the secondary Encrypted Cloudflare API to to get IPv4s for $domain" -ForegroundColor Blue
         $NewIPsV4 = Invoke-cURL "https://1.0.0.1/dns-query?name=$domain&type=A"
@@ -62,19 +62,19 @@ Function Get-IPv4DoHServerIPAddressWinSecureDNSMgr {
     }
     if (!$NewIPsV4) {
         Write-Host "Fourth try failed, using any available system DNS to get the IPv4s for $domain" -ForegroundColor Magenta
-        $NewIPsV4 = (Resolve-DnsName -Type A -Name "$domain" -NoHostsFile).ipaddress    
+        $NewIPsV4 = (Resolve-DnsName -Type A -Name "$domain" -NoHostsFile).ipaddress
     }
-  
+
     if ($NewIPsV4) {
         if ($NewIPsV4.count -gt 2) {
             $NewIPsV4 = $NewIPsV4 | Select-Object -First 2
-        }  
+        }
         return $NewIPsV4
     }
     else {
         Write-Host "`nFailed to get IPv4s for $domain" -ForegroundColor Red
         return $null
-    } 
+    }
 }
 
 # Explicitly defining array type variable to store IP addresses
@@ -83,10 +83,10 @@ $NewIPsV6 = @()
 Function Get-IPv6DoHServerIPAddressWinSecureDNSMgr {
     param ($domain)
 
-    # get the new IPv6s for $domain   
+    # get the new IPv6s for $domain
     Write-Host "Using the main Cloudflare Encrypted API to resolve $domain" -ForegroundColor Green
-    $NewIPsV6 = Invoke-cURL "https://1.1.1.1/dns-query?name=$domain&type=AAAA"   
-        
+    $NewIPsV6 = Invoke-cURL "https://1.1.1.1/dns-query?name=$domain&type=AAAA"
+
     if (!$NewIPsV6) {
         Write-Host "First try failed, now using the secondary Encrypted Cloudflare API to to get IPv6s for $domain" -ForegroundColor Blue
         $NewIPsV6 = Invoke-cURL "https://1.0.0.1/dns-query?name=$domain&type=AAAA"
@@ -101,14 +101,14 @@ Function Get-IPv6DoHServerIPAddressWinSecureDNSMgr {
     }
     if (!$NewIPsV6) {
         Write-Host "Fourth try failed, using any available system DNS to get the IPv6s for $domain" -ForegroundColor Magenta
-        $NewIPsV6 = (Resolve-DnsName -Type AAAA -Name "$domain" -NoHostsFile).ipaddress   
+        $NewIPsV6 = (Resolve-DnsName -Type AAAA -Name "$domain" -NoHostsFile).ipaddress
     }
 
     if ($NewIPsV6) {
         # in case server had more than 2 IP addresses
         if ($NewIPsV6.count -gt 2) {
             $NewIPsV6 = $NewIPsV6 | Select-Object -First 2
-        }        
+        }
         return $NewIPsV6
     }
     else {

@@ -6,15 +6,15 @@ function Set-CustomWinSecureDNS {
         [ValidatePattern('^https\:\/\/.+\..+\/.*', ErrorMessage = 'The value provided for the parameter DoHTemplate is not a valid DNS over HTTPS template. Please enter a valid DNS over HTTPS template that starts with https, has a TLD and a slash after it. E.g.: https://template.com/')]
         [ValidateScript({ $_ -notmatch 'https://(cloudflare-dns|dns\.google|dns\.quad9)\.com/dns-query' }, ErrorMessage = 'The DoH template you selected is one of the Windows built-in ones. Please select a different DoH template or use the Set-BuiltInWinSecureDNS cmdlet.')]
         [Parameter(Mandatory)][string]$DoHTemplate,
-        
+
         # The parameter can either accept 1 or 2 IPv4 addresses
         [ValidateCount(1, 2)][ipaddress[]]$IPV4s,
-        
+
         # The parameter can either accept 1 or 2 IPv6 addresses
         [ValidateCount(1, 2)][ipaddress[]]$IPV6s
     )
     begin {
-        
+
         $AutoDetectDoHIPs = $false
 
         # If IP addresses were provided manually by user, verify their version
@@ -23,7 +23,7 @@ function Set-CustomWinSecureDNS {
         }
         if ($IPV6s) {
             $IPV6s | ForEach-Object { if ($_.AddressFamily -ne 'InterNetworkV6') { throw "The IP address $_ is not a valid IPv6 address." } }
-        }  
+        }
 
         # if no IP addresses were provided manually by user, set the $AutoDetectDoHIPs variable to $true
         if (!$IPV4s -and !$IPV6s) {
@@ -31,7 +31,7 @@ function Set-CustomWinSecureDNS {
         }
 
         # Detect the active network adapter automatically
-        $ActiveNetworkInterface = Get-ActiveNetworkAdapterWinSecureDNS 
+        $ActiveNetworkInterface = Get-ActiveNetworkAdapterWinSecureDNS
         $ActiveNetworkInterface
 
         switch (Select-Option -Options 'Yes', 'No - Select Manually', 'Cancel' -Message "`nIs the detected network adapter correct ?") {
@@ -40,11 +40,11 @@ function Set-CustomWinSecureDNS {
             }
             'No - Select Manually' {
                 # Detect the active network adapter manually
-                $ActiveNetworkInterface = Get-ManualNetworkAdapterWinSecureDNS          
+                $ActiveNetworkInterface = Get-ManualNetworkAdapterWinSecureDNS
             } # properly exiting this advanced function is a bit tricky, so we use a variable to control the loop
-            'Cancel' { $ShouldExit = $true; return } 
+            'Cancel' { $ShouldExit = $true; return }
         }
-        
+
         # if user chose to cancel the Get-ManualNetworkAdapterWinSecureDNS function, set the $shouldExit variable to $true and exit the function in the Process block
         if (!$ActiveNetworkInterface) { $ShouldExit = $true; return }
 
@@ -58,8 +58,8 @@ function Set-CustomWinSecureDNS {
             $DoHTemplate -match $DomainExtractionRegex
             # Access the matched value
             $domain = $Matches[0]
-    
-            Write-Debug -Message "The extracted domain name is $domain`n"                                
+
+            Write-Debug -Message "The extracted domain name is $domain`n"
             # Get the IP addresses of the DoH domain
             $IPV4s = Get-IPv4DoHServerIPAddressWinSecureDNSMgr -Domain $domain
             $IPV6s = Get-IPv6DoHServerIPAddressWinSecureDNSMgr -Domain $domain
@@ -67,9 +67,9 @@ function Set-CustomWinSecureDNS {
             # If no IP addresses were found for either versions, exit the function
             if ($null -eq $IPV4s -and $null -eq $IPV6s) {
                 Write-Error -Message "`nNo IP addresses were found for the domain $domain. Please make sure the domain is valid and try again, alternatively you can use the Set-BuiltInWinSecureDNS cmdlet to set one of the built-in DoH templates."
-                $ShouldExit = $true; return 
+                $ShouldExit = $true; return
             }
-        } 
+        }
     }
     process {
 
@@ -91,15 +91,15 @@ function Set-CustomWinSecureDNS {
                 Remove-DnsClientDohServerAddress -ServerAddress $_.ServerAddress
                 $_
             }
-        }                       
+        }
 
         # reset the network adapter's DNS servers back to default to take care of any IPv6 strays
         Set-DnsClientServerAddress -InterfaceIndex $ActiveNetworkInterface.ifIndex -ResetServerAddresses -ErrorAction Stop
 
-        # delete all other previous DoH settings for ALL Interface - Windows behavior in settings when changing DoH settings is to delete all DoH settings for the interface we are modifying 
+        # delete all other previous DoH settings for ALL Interface - Windows behavior in settings when changing DoH settings is to delete all DoH settings for the interface we are modifying
         # but we need to delete all DoH settings for ALL interfaces in here because every time we virtualize a network adapter with external switch of Hyper-V,
         # Hyper-V assigns a new GUID to it, so it's better not to leave any leftover in the registry and clean up after ourselves
-        Remove-Item 'HKLM:System\CurrentControlSet\Services\Dnscache\InterfaceSpecificParameters\*' -Recurse    
+        Remove-Item 'HKLM:System\CurrentControlSet\Services\Dnscache\InterfaceSpecificParameters\*' -Recurse
 
         if ($null -ne $IPV4s) {
             # loop through each IPv4
@@ -110,11 +110,11 @@ function Set-CustomWinSecureDNS {
                 Add-DnsClientDohServerAddress -ServerAddress $_ -DohTemplate $DoHTemplate -AllowFallbackToUdp $False -AutoUpgrade $True
                 # add DoH settings for the specified Network adapter based on its GUID in registry
                 # value 1 for DohFlags key means use automatic template for DoH, 2 means manual template, since we add our template to Windows, it's predefined so we use value 1
-                New-Item -Path $Path -Force | Out-Null  
+                New-Item -Path $Path -Force | Out-Null
                 New-ItemProperty -Path $Path -Name 'DohFlags' -Value 1 -PropertyType Qword -Force
             }
         }
-   
+
         # Making sure the DoH server supports and has IPv6 addresses
         if ($null -ne $IPV6s) {
             # loop through each IPv6
@@ -125,16 +125,16 @@ function Set-CustomWinSecureDNS {
                 Add-DnsClientDohServerAddress -ServerAddress $_ -DohTemplate $DoHTemplate -AllowFallbackToUdp $False -AutoUpgrade $True
                 # add DoH settings for the specified Network adapter based on its GUID in registry
                 # value 1 for DohFlags key means use automatic template for DoH, 2 means manual template, since we already added our template to Windows, it's considered predefined, so we use value 1
-                New-Item -Path $Path -Force | Out-Null  
+                New-Item -Path $Path -Force | Out-Null
                 New-ItemProperty -Path $Path -Name 'DohFlags' -Value 1 -PropertyType Qword -Force
             }
         }
         # gather IPv4s and IPv6s all in one place
         $NewIPs = $IPV4s + $IPV6s
-       
+
         # this is responsible for making the changes in Windows settings UI > Network and internet > $ActiveNetworkInterface.Name
         Set-DnsClientServerAddress -ServerAddresses $NewIPs -InterfaceIndex $ActiveNetworkInterface.ifIndex -ErrorAction Stop
-        
+
     }
 
     end {
@@ -142,15 +142,15 @@ function Set-CustomWinSecureDNS {
         Clear-DnsClientCache
 
         Write-Host "`nDNS over HTTPS has been successfully configured for $($ActiveNetworkInterface.Name) using $DoHTemplate template.`n" -ForegroundColor Green
-    
+
         # Define the name and path of the task
         $taskName = 'Dynamic DoH Server IP check'
         $taskPath = '\DDoH\'
-    
+
         # Try to get the Dynamic DoH task and delete it if it exists
         if (Get-ScheduledTask -TaskName $taskName -TaskPath $taskPath -ErrorAction SilentlyContinue) {
             Unregister-ScheduledTask -TaskName $taskName -TaskPath $taskPath -Confirm:$false
-        }  
+        }
     }
     <#
 .SYNOPSIS
@@ -182,5 +182,5 @@ Enter 1 or 2 IPv4 and/or IPv6 addresses separated by comma
 Set-CustomWinSecureDNS -DoHTemplate https://example.com/
 Set-CDOH -DoHTemplate https://example.com -IPV4s 1.2.3.4 -IPV6s 2001:db8::8a2e:370:7334
 
-#> 
+#>
 }

@@ -6,7 +6,7 @@ function Set-DynamicIPDoHServer {
     [ValidatePattern('^https\:\/\/.+\..+\/.*', ErrorMessage = 'The value provided for the parameter DoHTemplate is not a valid DNS over HTTPS template. Please enter a valid DNS over HTTPS template that starts with https, has a TLD and a slash after it. E.g.: https://template.com/')]
     [ValidateScript({ $_ -notmatch 'https://(cloudflare-dns|dns\.google|dns\.quad9)\.com/dns-query' }, ErrorMessage = 'The DoH template you selected is one of the Windows built-in ones. Please select a different DoH template or use the Set-BuiltInWinSecureDNS cmdlet.')]
     [Parameter(Mandatory)][string]$DoHTemplate
-  ) 
+  )
 
   begin {
 
@@ -17,13 +17,13 @@ function Set-DynamicIPDoHServer {
     $DoHTemplate -match $DomainExtractionRegex
     # Access the matched value
     $domain = $Matches[0]
-        
+
     Write-Debug -Message "The extracted domain name is $domain`n"
 
   }
 
   process {
-  
+
     # error handling for the entire function - to make sure there is no error before attempting to create the scheduled task
     try {
 
@@ -43,11 +43,11 @@ function Set-DynamicIPDoHServer {
       # reset the network adapter's DNS servers back to default to take care of any IPv6 strays
       Set-DnsClientServerAddress -InterfaceIndex $ActiveNetworkInterface.ifIndex -ResetServerAddresses -ErrorAction Stop
 
-      # delete all other previous DoH settings for ALL Interface - Windows behavior in settings when changing DoH settings is to delete all DoH settings for the interface we are modifying 
+      # delete all other previous DoH settings for ALL Interface - Windows behavior in settings when changing DoH settings is to delete all DoH settings for the interface we are modifying
       # but we need to delete all DoH settings for ALL interfaces in here because every time we virtualize a network adapter with external switch of Hyper-V,
       # Hyper-V assigns a new GUID to it, so it's better not to leave any leftover in the registry and clean up after ourselves
       Remove-Item 'HKLM:System\CurrentControlSet\Services\Dnscache\InterfaceSpecificParameters\*' -Recurse
-          
+
       [string[]]$NewIPsV4 = Get-IPv4DoHServerIPAddressWinSecureDNSMgr -Domain $domain
 
       # loop through each IPv4
@@ -58,10 +58,10 @@ function Set-DynamicIPDoHServer {
         Add-DnsClientDohServerAddress -ServerAddress $_ -DohTemplate $DoHTemplate -AllowFallbackToUdp $False -AutoUpgrade $True
         # add DoH settings for the specified Network adapter based on its GUID in registry
         # value 1 for DohFlags key means use automatic template for DoH, 2 means manual template, since we add our template to Windows, it's predefined so we use value 1
-        New-Item -Path $Path -Force | Out-Null  
+        New-Item -Path $Path -Force | Out-Null
         New-ItemProperty -Path $Path -Name 'DohFlags' -Value 1 -PropertyType Qword -Force
       }
-        
+
       [string[]]$NewIPsV6 = Get-IPv6DoHServerIPAddressWinSecureDNSMgr -Domain $domain
 
       # loop through each IPv6
@@ -72,7 +72,7 @@ function Set-DynamicIPDoHServer {
         Add-DnsClientDohServerAddress -ServerAddress $_ -DohTemplate $DoHTemplate -AllowFallbackToUdp $False -AutoUpgrade $True
         # add DoH settings for the specified Network adapter based on its GUID in registry
         # value 1 for DohFlags key means use automatic template for DoH, 2 means manual template, since we already added our template to Windows, it's considered predefined, so we use value 1
-        New-Item -Path $Path -Force | Out-Null  
+        New-Item -Path $Path -Force | Out-Null
         New-ItemProperty -Path $Path -Name 'DohFlags' -Value 1 -PropertyType Qword -Force
       }
 
@@ -88,13 +88,13 @@ function Set-DynamicIPDoHServer {
     catch {
       Write-Host 'These errors occured after running the module' -ForegroundColor white
       $_
-      $ModuleErrors = $_ 
+      $ModuleErrors = $_
     }
 
   }
 
-  end {    
-        
+  end {
+
     # here we enable logging for the event log below (which is disabled by default) and set its log size from the default 1MB to 2MB
     $LogName = 'Microsoft-Windows-DNS-Client/Operational'
 
@@ -103,10 +103,10 @@ function Set-DynamicIPDoHServer {
     $Log.IsEnabled = $true
     $Log.SaveChanges()
     if (!$ModuleErrors) {
-      
-      Write-Debug "No errors occured when running the module, creating the scheduled task now if it's not already been created" 
-      
-      # create a scheduled task    
+
+      Write-Debug "No errors occured when running the module, creating the scheduled task now if it's not already been created"
+
+      # create a scheduled task
       $Action = New-ScheduledTaskAction -Execute 'pwsh.exe' -Argument "-executionPolicy bypass -command `"Set-DynamicIPDoHServer -DoHTemplate '$DoHTemplate'`""
       $TaskPrincipal = New-ScheduledTaskPrincipal -LogonType S4U -UserId $env:USERNAME -RunLevel Highest
       # trigger 1
@@ -120,7 +120,7 @@ function Set-DynamicIPDoHServer {
       $EventTrigger.Enabled = $True
       $EventTrigger.ExecutionTimeLimit = 'PT1M'
       # trigger 2
-      $Time = 
+      $Time =
       New-ScheduledTaskTrigger `
         -Once -At (Get-Date).AddHours(3) `
         -RandomDelay (New-TimeSpan -Seconds 30) `
@@ -130,8 +130,8 @@ function Set-DynamicIPDoHServer {
       # define advanced settings for the task
       $TaskSettings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -Compatibility Win8 -StartWhenAvailable -ExecutionTimeLimit (New-TimeSpan -Minutes 1)
       # add advanced settings we defined to the task
-      Set-ScheduledTask -TaskPath 'DDoH' -TaskName 'Dynamic DoH Server IP check' -Settings $TaskSettings 
-     
+      Set-ScheduledTask -TaskPath 'DDoH' -TaskName 'Dynamic DoH Server IP check' -Settings $TaskSettings
+
     }
   }
 

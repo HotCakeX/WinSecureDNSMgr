@@ -1,19 +1,19 @@
-function Get-ActiveNetworkAdapterWinSecureDNS {  
+function Get-ActiveNetworkAdapterWinSecureDNS {
     try {
         # get the currently active network interface/adapter that is being used for Internet access
         # This gets the top most active adapter based on route metric
         $ActiveNetworkInterface = Get-NetRoute -DestinationPrefix '0.0.0.0/0', '::/0' -ErrorAction SilentlyContinue |
         Sort-Object -Property { $_.InterfaceMetric + $_.RouteMetric } -Top 1 -PipelineVariable ActiveAdapter |
         Get-NetAdapter -ErrorAction SilentlyContinue | Where-Object { $_.ifIndex -eq $ActiveAdapter.ifIndex }
-    
+
         # check if the top most active adapter that we got has an interface index
         # Windows built-in VPN client connections don't have interface index and don't appear in Get-Netadapter results
-        if (!$ActiveNetworkInterface) {             
-            Write-Debug "This adapter doesn't even exist in get-Netadapter results and doesn't have interface index, must be built-in Windows VPN client adapter"         
+        if (!$ActiveNetworkInterface) {
+            Write-Debug "This adapter doesn't even exist in get-Netadapter results and doesn't have interface index, must be built-in Windows VPN client adapter"
             # then we get the 2nd adapter from the top
             $ActiveNetworkInterface = Get-NetRoute -DestinationPrefix '0.0.0.0/0', '::/0' -ErrorAction SilentlyContinue |
             Sort-Object -Property { $_.InterfaceMetric + $_.RouteMetric } -Top 2 |
-            Select-Object -Skip 1 | Select-Object -First 1 -PipelineVariable ActiveAdapter | 
+            Select-Object -Skip 1 | Select-Object -First 1 -PipelineVariable ActiveAdapter |
             Get-NetAdapter | Where-Object { $_.ifIndex -eq $ActiveAdapter.ifIndex }
         }
         # if the top most adapter that we got has an interface index
@@ -26,15 +26,15 @@ function Get-ActiveNetworkAdapterWinSecureDNS {
                 if ($ActiveNetworkInterface.InterfaceDescription -like '*Hyper-V Virtual Ethernet Adapter*'  ) {
                     Write-Debug "The detected active network adapter is virtual, it's Hyper-V External switch"
                     $ActiveNetworkInterface = $ActiveNetworkInterface
-                } 
+                }
                 # if the detected active network adapter is virtual but Not virtual external Hyper-V network adapter, which means it is VPN virtual network adapter (but not Windows built-in VPN client),
                 # choose the second prioritized adapter/interface based on route metric
-                # tested with Cloudflare WARP (that doesn't create a separate adapter), Wintun, TAP, OpenVPN and has been always successful in detecting the correct network adapter/interface         
+                # tested with Cloudflare WARP (that doesn't create a separate adapter), Wintun, TAP, OpenVPN and has been always successful in detecting the correct network adapter/interface
                 else {
                     Write-Debug 'Detected active network adapter is virtual but not virtual Hyper-V adapter, most likely a VPN virtual network adapter, choosing the second prioritized adapter/interface based on route metric'
                     $ActiveNetworkInterface = Get-NetRoute -DestinationPrefix '0.0.0.0/0', '::/0' -ErrorAction SilentlyContinue |
                     Sort-Object -Property { $_.InterfaceMetric + $_.RouteMetric } -Top 2 |
-                    Select-Object -Skip 1 | Select-Object -First 1 -PipelineVariable ActiveAdapter | 
+                    Select-Object -Skip 1 | Select-Object -First 1 -PipelineVariable ActiveAdapter |
                     Get-NetAdapter | Where-Object { $_.ifIndex -eq $ActiveAdapter.ifIndex }
                 }
             }
@@ -42,11 +42,11 @@ function Get-ActiveNetworkAdapterWinSecureDNS {
         Write-Debug 'This is the automatically detected network adapter this script is going to set Secure DNS for'
         return $ActiveNetworkInterface
     }
-    catch { 
+    catch {
         $_
         $_.Exception
-        break     
-    }  
+        break
+    }
 }
 
 # luckily, it's not normally possible to change description of network interfaces/adapters

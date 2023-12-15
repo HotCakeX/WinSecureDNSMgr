@@ -3,7 +3,7 @@ Function Set-BuiltInWinSecureDNS {
     [CmdletBinding(SupportsShouldProcess = $true)]
     param (
         [ValidateSet('Cloudflare', 'Google', 'Quad9', ErrorMessage = 'The selected DNS over HTTPS provider is not supported by Windows. Please select a different provider or use the Set-CustomWinSecureDNS cmdlet.')]
-        [Parameter(Mandatory)][string]$DoHProvider 
+        [Parameter(Mandatory)][string]$DoHProvider
     )
     begin {
 
@@ -22,9 +22,9 @@ Function Set-BuiltInWinSecureDNS {
         if (-NOT ((Get-DnsClientDohServerAddress | Where-Object { $_.DohTemplate -eq $DetectedDoHTemplate }).DohTemplate) ) {
             throw "The DNS over HTTPS provider $DoHProvider is not supported by Windows. Please select a different provider."
         }
-    
+
         # Automatically detect the correct network adapter
-        $ActiveNetworkInterface = Get-ActiveNetworkAdapterWinSecureDNS 
+        $ActiveNetworkInterface = Get-ActiveNetworkAdapterWinSecureDNS
         $ActiveNetworkInterface
 
         # loop until the user confirms the detected adapter is the correct one, Selects the correct network adapter or Cancels
@@ -33,11 +33,11 @@ Function Set-BuiltInWinSecureDNS {
                 $ActiveNetworkInterface = $ActiveNetworkInterface
             }
             'No - Select Manually' {
-                $ActiveNetworkInterface = Get-ManualNetworkAdapterWinSecureDNS          
+                $ActiveNetworkInterface = Get-ManualNetworkAdapterWinSecureDNS
             } # properly exiting this advanced function is a bit tricky, so we use a variable to control the loop
-            'Cancel' { $ShouldExit = $true; return } 
+            'Cancel' { $ShouldExit = $true; return }
         }
-        
+
         # if user chose to cancel the Get-ManualNetworkAdapterWinSecureDNS function, set the $shouldExit variable to $true and exit the function in the Process block
         if (!$ActiveNetworkInterface) { $ShouldExit = $true; return }
     }
@@ -49,11 +49,11 @@ Function Set-BuiltInWinSecureDNS {
         # reset the network adapter's DNS servers back to default to take care of any IPv6 strays
         Set-DnsClientServerAddress -InterfaceIndex $ActiveNetworkInterface.ifIndex -ResetServerAddresses -ErrorAction Stop
 
-        # delete all other previous DoH settings for ALL Interface - Windows behavior in settings when changing DoH settings is to delete all DoH settings for the interface we are modifying 
+        # delete all other previous DoH settings for ALL Interface - Windows behavior in settings when changing DoH settings is to delete all DoH settings for the interface we are modifying
         # but we need to delete all DoH settings for ALL interfaces in here because every time we virtualize a network adapter with external switch of Hyper-V,
         # Hyper-V assigns a new GUID to it, so it's better not to leave any leftover in the registry and clean up after ourselves
         Remove-Item 'HKLM:System\CurrentControlSet\Services\Dnscache\InterfaceSpecificParameters\*' -Recurse | Out-Null
-  
+
         $DoHIPs = (Get-DnsClientDohServerAddress | Where-Object { $_.DohTemplate -eq $DetectedDoHTemplate }).ServerAddress
 
         $DoHIPs | ForEach-Object {
@@ -66,7 +66,7 @@ Function Set-BuiltInWinSecureDNS {
 
                 # add DoH settings for the specified Network adapter based on its GUID in registry
                 # value 1 for DohFlags key means use automatic template for DoH, 2 means manual template, since we add our template to Windows, it's predefined so we use value 1
-                New-Item -Path $Path -Force | Out-Null  
+                New-Item -Path $Path -Force | Out-Null
                 New-ItemProperty -Path $Path -Name 'DohFlags' -Value 1 -PropertyType Qword -Force
 
                 Set-DnsClientDohServerAddress -ServerAddress $_ -DohTemplate $DetectedDoHTemplate -AllowFallbackToUdp $False -AutoUpgrade $True
@@ -77,7 +77,7 @@ Function Set-BuiltInWinSecureDNS {
 
                 # add DoH settings for the specified Network adapter based on its GUID in registry
                 # value 1 for DohFlags key means use automatic template for DoH, 2 means manual template, since we already added our template to Windows, it's considered predefined, so we use value 1
-                New-Item -Path $Path -Force | Out-Null  
+                New-Item -Path $Path -Force | Out-Null
                 New-ItemProperty -Path $Path -Name 'DohFlags' -Value 1 -PropertyType Qword -Force
 
                 Set-DnsClientDohServerAddress -ServerAddress $_ -DohTemplate $DetectedDoHTemplate -AllowFallbackToUdp $False -AutoUpgrade $True
@@ -93,7 +93,7 @@ Function Set-BuiltInWinSecureDNS {
         Clear-DnsClientCache
 
         Write-Host "`nDNS over HTTPS (DoH) is now configured for $($ActiveNetworkInterface.Name) using $DoHProvider provider.`n" -ForegroundColor Green
-    
+
         # Define the name and path of the task
         $taskName = 'Dynamic DoH Server IP check'
         $taskPath = '\DDoH\'
@@ -101,7 +101,7 @@ Function Set-BuiltInWinSecureDNS {
         # Try to get the Dynamic DoH task and delete it if it exists
         if (Get-ScheduledTask -TaskName $taskName -TaskPath $taskPath -ErrorAction SilentlyContinue) {
             Unregister-ScheduledTask -TaskName $taskName -TaskPath $taskPath -Confirm:$false
-        }    
+        }
     }
 
     <#
