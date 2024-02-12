@@ -39,7 +39,7 @@ function Set-CustomWinSecureDNS {
             }
             'No - Select Manually' {
                 # Detect the active network adapter manually
-                $ActiveNetworkInterface = Get-ManualNetworkAdapterWinSecureDNS
+                [Microsoft.Management.Infrastructure.CimInstance]$ActiveNetworkInterface = Get-ManualNetworkAdapterWinSecureDNS
             }
             'Cancel' {
                 [System.Boolean]$ShouldExit = $True
@@ -119,7 +119,7 @@ function Set-CustomWinSecureDNS {
                 # add DoH settings for the specified Network adapter based on its GUID in registry
                 # value 1 for DohFlags key means use automatic template for DoH, 2 means manual template, since we add our template to Windows, it's predefined so we use value 1
                 New-Item -Path $PathV4 -Force | Out-Null
-                New-ItemProperty -Path $PathV4 -Name 'DohFlags' -Value '1' -PropertyType 'Qword' -Force
+                New-ItemProperty -Path $PathV4 -Name 'DohFlags' -Value '1' -PropertyType 'Qword' -Force | Out-Null
             }
         }
 
@@ -138,7 +138,7 @@ function Set-CustomWinSecureDNS {
                 # add DoH settings for the specified Network adapter based on its GUID in registry
                 # value 1 for DohFlags key means use automatic template for DoH, 2 means manual template, since we already added our template to Windows, it's considered predefined, so we use value 1
                 New-Item -Path $PathV6 -Force | Out-Null
-                New-ItemProperty -Path $PathV6 -Name 'DohFlags' -Value '1' -PropertyType 'Qword' -Force
+                New-ItemProperty -Path $PathV6 -Name 'DohFlags' -Value '1' -PropertyType 'Qword' -Force | Out-Null
             }
         }
 
@@ -170,32 +170,23 @@ function Set-CustomWinSecureDNS {
     <#
 .SYNOPSIS
     This function is a wrapper around the official Microsoft methods to configure DNS over HTTPS in Windows
-
 .LINK
     https://github.com/HotCakeX/WinSecureDNSMgr
-
 .DESCRIPTION
     This script is a wrapper around the official Microsoft methods to configure DNS over HTTPS in Windows.
     f no IP address is provided for the DoH template, they will be detected automatically.
-
 .FUNCTIONALITY
     Using official Microsoft methods configures DNS over HTTPS in Windows
-
 .PARAMETER DoHProvider
     The name of the 3 built-in DNS over HTTPS providers: Cloudflare, Google and Quad9
-
 .PARAMETER DoHTemplate
     Enter a custom DoH template URL that starts with https, has a TLD and a slash after it. E.g.: https://template.com/"
-
 .PARAMETER IPV4s
     Enter 1 or 2 IPv4 and/or IPv6 addresses separated by comma
-
 .PARAMETER IPV6s
     Enter 1 or 2 IPv4 and/or IPv6 addresses separated by comma
-
 .EXAMPLE
     Set-CustomWinSecureDNS -DoHTemplate https://example.com/
     Set-CDOH -DoHTemplate https://example.com -IPV4s 1.2.3.4 -IPV6s 2001:db8::8a2e:370:7334
-
 #>
 }

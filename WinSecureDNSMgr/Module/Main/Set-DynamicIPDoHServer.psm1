@@ -59,7 +59,7 @@ function Set-DynamicIPDoHServer {
       # add DoH settings for the specified Network adapter based on its GUID in registry
       # value 1 for DohFlags key means use automatic template for DoH, 2 means manual template, since we add our template to Windows, it's predefined so we use value 1
       New-Item -Path $PathV4 -Force | Out-Null
-      New-ItemProperty -Path $PathV4 -Name 'DohFlags' -Value '1' -PropertyType 'Qword' -Force
+      New-ItemProperty -Path $PathV4 -Name 'DohFlags' -Value '1' -PropertyType 'Qword' -Force | Out-Null
     }
 
     [System.String[]]$NewIPsV6 = Get-IPv6DoHServerIPAddressWinSecureDNSMgr -Domain $Domain
@@ -76,7 +76,7 @@ function Set-DynamicIPDoHServer {
       # add DoH settings for the specified Network adapter based on its GUID in registry
       # value 1 for DohFlags key means use automatic template for DoH, 2 means manual template, since we already added our template to Windows, it's considered predefined, so we use value 1
       New-Item -Path $PathV6 -Force | Out-Null
-      New-ItemProperty -Path $PathV6 -Name 'DohFlags' -Value '1' -PropertyType 'Qword' -Force
+      New-ItemProperty -Path $PathV6 -Name 'DohFlags' -Value '1' -PropertyType 'Qword' -Force | Out-Null
     }
 
     # gather IPv4s and IPv6s all in one place
@@ -84,7 +84,7 @@ function Set-DynamicIPDoHServer {
 
     # this is responsible for making the changes in Windows settings UI > Network and internet > $ActiveNetworkInterface.Name
     Set-DnsClientServerAddress -ServerAddresses $NewIPs -InterfaceIndex $ActiveNetworkInterface.ifIndex
-    
+
     Write-Verbose -Message 'Clearing the DNS client cache'
     Clear-DnsClientCache
   }
@@ -130,23 +130,17 @@ function Set-DynamicIPDoHServer {
   <#
 .SYNOPSIS
   Use a DNS over HTTPS (DoH) server with a dynamic IP address in Windows
-
 .LINK
   https://github.com/HotCakeX/WinSecureDNSMgr
-
 .DESCRIPTION
   Easily use a DNS over HTTPS (DoH) server with a dynamic IP address in Windows
-
 .FUNCTIONALITY
   Sets a DNS over HTTPS (DoH) server in Windows DNS client settings and adds the DoH server to the Windows DoH template predefined list.
   It then updates the DoH server IP address in Windows DNS client settings whenever the IP address of the DoH server changes.
-
 .PARAMETER DoHTemplate
   The DNS over HTTPS template of the server that has a dynamic IP address
-
 .EXAMPLE
   Set-DDOH -DoHTemplate https://example.com/
   Set-DynamicIPDoHServer -DoHTemplate https://example.com/
-
 #>
 }

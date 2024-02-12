@@ -22,7 +22,7 @@ Function Set-BuiltInWinSecureDNS {
                 $ActiveNetworkInterface = $ActiveNetworkInterface
             }
             'No - Select Manually' {
-                $ActiveNetworkInterface = Get-ManualNetworkAdapterWinSecureDNS
+                [Microsoft.Management.Infrastructure.CimInstance]$ActiveNetworkInterface = Get-ManualNetworkAdapterWinSecureDNS
             }
             'Cancel' {
                 [System.Boolean]$ShouldExit = $True
@@ -61,7 +61,7 @@ Function Set-BuiltInWinSecureDNS {
                 # add DoH settings for the specified Network adapter based on its GUID in registry
                 # value 1 for DohFlags key means use automatic template for DoH, 2 means manual template, since we add our template to Windows, it's predefined so we use value 1
                 New-Item -Path $PathV4 -Force | Out-Null
-                New-ItemProperty -Path $PathV4 -Name 'DohFlags' -Value 1 -PropertyType 'Qword' -Force
+                New-ItemProperty -Path $PathV4 -Name 'DohFlags' -Value 1 -PropertyType 'Qword' -Force | Out-Null
 
                 Set-DnsClientDohServerAddress -ServerAddress $_ -DohTemplate $DetectedDoHTemplate -AllowFallbackToUdp $False -AutoUpgrade $True
             }
@@ -74,7 +74,7 @@ Function Set-BuiltInWinSecureDNS {
                 # add DoH settings for the specified Network adapter based on its GUID in registry
                 # value 1 for DohFlags key means use automatic template for DoH, 2 means manual template, since we already added our template to Windows, it's considered predefined, so we use value 1
                 New-Item -Path $PathV6 -Force | Out-Null
-                New-ItemProperty -Path $PathV6 -Name 'DohFlags' -Value 1 -PropertyType 'Qword' -Force
+                New-ItemProperty -Path $PathV6 -Name 'DohFlags' -Value 1 -PropertyType 'Qword' -Force | Out-Null
 
                 Set-DnsClientDohServerAddress -ServerAddress $_ -DohTemplate $DetectedDoHTemplate -AllowFallbackToUdp $False -AutoUpgrade $True
             }
@@ -106,19 +106,14 @@ Function Set-BuiltInWinSecureDNS {
     <#
 .SYNOPSIS
     Easily and quickly configure DNS over HTTPS (DoH) in Windows
-
 .LINK
     https://github.com/HotCakeX/WinSecureDNSMgr
-
 .DESCRIPTION
     Easily and quickly configure DNS over HTTPS (DoH) in Windows
-
 .PARAMETER DoHProvider
     The name of the 3 built-in DNS over HTTPS providers: Cloudflare, Google and Quad9
-
 .EXAMPLE
     Set-BuiltInWinSecureDNS -DoHProvider Cloudflare
     Set-DOH -DoHProvider Cloudflare
-
 #>
 }
