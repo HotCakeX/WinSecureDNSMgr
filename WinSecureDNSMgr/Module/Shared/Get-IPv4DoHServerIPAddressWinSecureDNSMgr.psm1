@@ -9,6 +9,7 @@ Function Get-IPv4DoHServerIPAddressWinSecureDNSMgr {
         # Importing the $PSDefaultParameterValues to the current session, prior to everything else
         . "$WinSecureDNSMgrModuleRootPath\MainExt\PSDefaultParameterValues.ps1"
 
+        # Importing the required sub-modules
         Import-Module -Name "$WinSecureDNSMgrModuleRootPath\Shared\Get-DoHIPs.psm1" -Force
 
         # An array to store IP addresses

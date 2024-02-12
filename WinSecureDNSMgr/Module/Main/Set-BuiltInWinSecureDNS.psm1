@@ -13,7 +13,7 @@ Function Set-BuiltInWinSecureDNS {
         # Importing the $PSDefaultParameterValues to the current session, prior to everything else
         . "$WinSecureDNSMgrModuleRootPath\MainExt\PSDefaultParameterValues.ps1"
 
-        # Import sub-modules
+        # Importing the required sub-modules
         Import-Module -Name "$WinSecureDNSMgrModuleRootPath\Shared\Get-ActiveNetworkAdapterWinSecureDNS.psm1" -Force
         Import-Module -Name "$WinSecureDNSMgrModuleRootPath\Shared\Get-ManualNetworkAdapterWinSecureDNS.psm1" -Force
         Import-Module -Name "$WinSecureDNSMgrModuleRootPath\Shared\Select-Option.psm1" -Force

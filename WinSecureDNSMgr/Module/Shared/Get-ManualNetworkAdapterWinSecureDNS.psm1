@@ -17,7 +17,7 @@ function Get-ManualNetworkAdapterWinSecureDNS {
         # Importing the $PSDefaultParameterValues to the current session, prior to everything else
         . "$WinSecureDNSMgrModuleRootPath\MainExt\PSDefaultParameterValues.ps1"
 
-        # Import the required modules
+        # Importing the required sub-modules
         Import-Module -Name "$WinSecureDNSMgrModuleRootPath\Shared\ColorFunctions.psm1" -Force
     }
 
