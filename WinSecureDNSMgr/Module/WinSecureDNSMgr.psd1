@@ -100,13 +100,19 @@ https://github.com/HotCakeX/WinSecureDNSMgr
     # FormatsToProcess = @()
 
     # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
-    NestedModules        = @('Set-BuiltInWinSecureDNS.psm1', 'Set-CustomWinSecureDNS.psm1', 'Set-DynamicIPDoHServer.psm1')
+    NestedModules        = @('Main\Set-BuiltInWinSecureDNS.psm1',
+        'Main\Set-CustomWinSecureDNS.psm1',
+        'Main\Set-DynamicIPDoHServer.psm1')
 
     # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
-    FunctionsToExport    = @('Set-BuiltInWinSecureDNS', 'Set-CustomWinSecureDNS', 'Set-DynamicIPDoHServer')
+    FunctionsToExport    = @('Set-BuiltInWinSecureDNS',
+        'Set-CustomWinSecureDNS',
+        'Set-DynamicIPDoHServer')
 
     # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
-    CmdletsToExport      = @('Set-BuiltInWinSecureDNS', 'Set-CustomWinSecureDNS', 'Set-DynamicIPDoHServer')
+    CmdletsToExport      = @('Set-BuiltInWinSecureDNS',
+        'Set-CustomWinSecureDNS',
+        'Set-DynamicIPDoHServer')
 
     # Variables to export from this module
     VariablesToExport    = '*'
@@ -124,12 +130,12 @@ https://github.com/HotCakeX/WinSecureDNSMgr
     FileList             = @(
         'WinSecureDNSMgr.psm1',
         'WinSecureDNSMgr.psd1',
-        'Get-ActiveNetworkAdapterWinSecureDNS.psm1',
-        'Get-ManualNetworkAdapterWinSecureDNS.psm1',
-        'CommonResources.psm1',
-        'Set-BuiltInWinSecureDNS.psm1',
-        'Set-CustomWinSecureDNS.psm1',
-        'Set-DynamicIPDoHServer.psm1'
+        'Shared\Get-ActiveNetworkAdapterWinSecureDNS.psm1',
+        'Shared\Get-ManualNetworkAdapterWinSecureDNS.psm1',
+        'Shared\CommonResources.psm1',
+        'Main\Set-BuiltInWinSecureDNS.psm1',
+        'Main\Set-CustomWinSecureDNS.psm1',
+        'Main\Set-DynamicIPDoHServer.psm1'
     )
 
     # Private data to pass to the module specified in RootModule/ModuleToProcess. This may also contain a PSData hashtable with additional module metadata used by PowerShell.
