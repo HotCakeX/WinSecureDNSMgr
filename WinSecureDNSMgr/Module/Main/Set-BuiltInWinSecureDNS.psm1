@@ -114,9 +114,6 @@ https://github.com/HotCakeX/WinSecureDNSMgr
 .DESCRIPTION
 Easily and quickly configure DNS over HTTPS (DoH) in Windows
 
-.FUNCTIONALITY
-Using official Microsoft methods configures DNS over HTTPS in Windows
-
 .PARAMETER DoHProvider
 The name of the 3 built-in DNS over HTTPS providers: Cloudflare, Google and Quad9
 

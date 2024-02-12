@@ -1,8 +1,8 @@
 # Functions for custom color writing
-function WriteViolet { Write-Host "$($PSStyle.Foreground.FromRGB(153,0,255))$($args[0])$($PSStyle.Reset)" -NoNewline }
-function WritePink { Write-Host "$($PSStyle.Foreground.FromRGB(255,0,230))$($args[0])$($PSStyle.Reset)" -NoNewline }
-function WriteLavender { Write-Host "$($PSStyle.Foreground.FromRgb(255,179,255))$($args[0])$($PSStyle.Reset)" -NoNewline }
-function WriteTeaGreen { Write-Host "$($PSStyle.Foreground.FromRgb(133, 222, 119))$($args[0])$($PSStyle.Reset)" -NoNewline }
+function WriteViolet { Write-Host -Object "$($PSStyle.Foreground.FromRGB(153,0,255))$($args[0])$($PSStyle.Reset)" -NoNewline }
+function WritePink { Write-Host -Object "$($PSStyle.Foreground.FromRGB(255,0,230))$($args[0])$($PSStyle.Reset)" -NoNewline }
+function WriteLavender { Write-Host -Object "$($PSStyle.Foreground.FromRgb(255,179,255))$($args[0])$($PSStyle.Reset)" -NoNewline }
+function WriteTeaGreen { Write-Host -Object "$($PSStyle.Foreground.FromRgb(133, 222, 119))$($args[0])$($PSStyle.Reset)" -NoNewline }
 
 
 function Select-Option {
@@ -45,7 +45,7 @@ Function Get-IPv4DoHServerIPAddressWinSecureDNSMgr {
     param ($domain)
 
     # get the new IPv4s for $domain
-    Write-Host "Using the main Cloudflare Encrypted API to resolve $domain" -ForegroundColor Green
+    Write-Host -Object "Using the main Cloudflare Encrypted API to resolve $domain" -ForegroundColor Green
     $NewIPsV4 = Invoke-cURL "https://1.1.1.1/dns-query?name=$domain&type=A"
 
     if (!$NewIPsV4) {
@@ -116,4 +116,42 @@ Function Get-IPv6DoHServerIPAddressWinSecureDNSMgr {
         return $null
     }
 }
+
+
+# Defining the Built-in DNS templates available in Windows
+$BuiltInDoHTemplatesReference = [ordered]@{
+    'CloudFlare' = [ordered]@{
+        'IPv4' = [ordered]@{
+            '1.1.1.1' = 'https://cloudflare-dns.com/dns-query'
+            '1.0.0.1' = 'https://cloudflare-dns.com/dns-query'
+        }
+        'IPv6' = [ordered]@{
+            '2606:4700:4700::1111' = 'https://cloudflare-dns.com/dns-query'
+            '2606:4700:4700::1001' = 'https://cloudflare-dns.com/dns-query'
+        }
+    }
+    'Quad9'      = [ordered]@{
+        'IPv4' = [ordered]@{
+            '9.9.9.9'         = 'https://dns.quad9.net/dns-query'
+            '149.112.112.112' = 'https://dns.quad9.net/dns-query'
+
+        }
+        'IPv6' = [ordered]@{
+            '2620:fe::9'  = 'https://dns.quad9.net/dns-query'
+            '2620:fe::fe' = 'https://dns.quad9.net/dns-query'
+        }
+    }
+    'Google'     = [ordered]@{
+        'IPv4' = [ordered]@{
+            '8.8.8.8' = 'https://dns.google/dns-query'
+            '8.8.4.4' = 'https://dns.google/dns-query'
+        }
+        'IPv6' = [ordered]@{
+            '2001:4860:4860::8888' = 'https://dns.google/dns-query'
+            '2001:4860:4860::8844' = 'https://dns.google/dns-query'
+        }
+    }
+}
+
+
 
