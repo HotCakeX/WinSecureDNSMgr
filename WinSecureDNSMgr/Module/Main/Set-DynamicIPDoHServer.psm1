@@ -27,15 +27,15 @@ function Set-DynamicIPDoHServer {
     # error handling for the entire function - to make sure there is no error before attempting to create the scheduled task
     try {
 
-      $ActiveNetworkInterface = Get-ActiveNetworkAdapterWinSecureDNS
-      Write-Host 'This is the final detected network adapter this module is going to set Secure DNS for' -ForegroundColor DarkMagenta
+      [Microsoft.Management.Infrastructure.CimInstance]$ActiveNetworkInterface = Get-ActiveNetworkAdapterWinSecureDNS
+      Write-Host -Object 'This is the final detected network adapter this module is going to set Secure DNS for' -ForegroundColor DarkMagenta
       $ActiveNetworkInterface
 
       # check if there is any IP address already associated with "$DoHTemplate" template
       $OldIPs = (Get-DnsClientDohServerAddress | Where-Object { $_.dohTemplate -eq $DoHTemplate }).serveraddress
       # if there is, remove them
       if ($OldIPs) {
-        $OldIPs | ForEach-Object {
+        $OldIPs | ForEach-Object -Process {
           Remove-DnsClientDohServerAddress -ServerAddress $_
         }
       }
@@ -46,7 +46,7 @@ function Set-DynamicIPDoHServer {
       # delete all other previous DoH settings for ALL Interface - Windows behavior in settings when changing DoH settings is to delete all DoH settings for the interface we are modifying
       # but we need to delete all DoH settings for ALL interfaces in here because every time we virtualize a network adapter with external switch of Hyper-V,
       # Hyper-V assigns a new GUID to it, so it's better not to leave any leftover in the registry and clean up after ourselves
-      Remove-Item 'HKLM:System\CurrentControlSet\Services\Dnscache\InterfaceSpecificParameters\*' -Recurse
+      Remove-Item -Path 'HKLM:System\CurrentControlSet\Services\Dnscache\InterfaceSpecificParameters\*' -Recurse
 
       [System.String[]]$NewIPsV4 = Get-IPv4DoHServerIPAddressWinSecureDNSMgr -Domain $Domain
 

@@ -11,7 +11,7 @@ Function Set-BuiltInWinSecureDNS {
         [System.String]$DetectedDoHTemplate = ($BuiltInDoHTemplatesReference.GetEnumerator() | Where-Object { $_.Key -eq $DoHProvider }).Value.Values.Values[0]
 
         # Automatically detect the correct network adapter
-        $ActiveNetworkInterface = Get-ActiveNetworkAdapterWinSecureDNS
+        [Microsoft.Management.Infrastructure.CimInstance]$ActiveNetworkInterface = Get-ActiveNetworkAdapterWinSecureDNS
         $ActiveNetworkInterface
 
         # Loop until the user confirms the detected adapter is the correct one, Selects the correct network adapter or Cancels

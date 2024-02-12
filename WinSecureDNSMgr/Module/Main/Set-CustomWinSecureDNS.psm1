@@ -28,7 +28,7 @@ function Set-CustomWinSecureDNS {
         }
 
         # Detect the active network adapter automatically
-        $ActiveNetworkInterface = Get-ActiveNetworkAdapterWinSecureDNS
+        [Microsoft.Management.Infrastructure.CimInstance]$ActiveNetworkInterface = Get-ActiveNetworkAdapterWinSecureDNS
         $ActiveNetworkInterface
 
         switch (Select-Option -Options 'Yes', 'No - Select Manually', 'Cancel' -Message "`nIs the detected network adapter correct ?") {
