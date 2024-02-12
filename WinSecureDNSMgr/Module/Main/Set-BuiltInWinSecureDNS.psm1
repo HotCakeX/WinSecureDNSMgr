@@ -25,7 +25,7 @@ Function Set-BuiltInWinSecureDNS {
                 $ActiveNetworkInterface = Get-ManualNetworkAdapterWinSecureDNS
             }
             'Cancel' {
-                $ShouldExit = $True
+                [System.Boolean]$ShouldExit = $True
                 return
             }
         }
@@ -88,7 +88,7 @@ Function Set-BuiltInWinSecureDNS {
         # if the user selected Cancel, do not proceed with the end block
         if ($ShouldExit) { break }
 
-        # clear DNS client Cache
+        Write-Verbose -Message 'Clearing the DNS client cache'
         Clear-DnsClientCache
 
         Write-Host -Object "DNS over HTTPS (DoH) is now configured for $($ActiveNetworkInterface.Name) using $DoHProvider provider." -ForegroundColor Green
@@ -105,20 +105,20 @@ Function Set-BuiltInWinSecureDNS {
 
     <#
 .SYNOPSIS
-Easily and quickly configure DNS over HTTPS (DoH) in Windows
+    Easily and quickly configure DNS over HTTPS (DoH) in Windows
 
 .LINK
-https://github.com/HotCakeX/WinSecureDNSMgr
+    https://github.com/HotCakeX/WinSecureDNSMgr
 
 .DESCRIPTION
-Easily and quickly configure DNS over HTTPS (DoH) in Windows
+    Easily and quickly configure DNS over HTTPS (DoH) in Windows
 
 .PARAMETER DoHProvider
-The name of the 3 built-in DNS over HTTPS providers: Cloudflare, Google and Quad9
+    The name of the 3 built-in DNS over HTTPS providers: Cloudflare, Google and Quad9
 
 .EXAMPLE
-Set-BuiltInWinSecureDNS -DoHProvider Cloudflare
-Set-DOH -DoHProvider Cloudflare
+    Set-BuiltInWinSecureDNS -DoHProvider Cloudflare
+    Set-DOH -DoHProvider Cloudflare
 
 #>
 }

@@ -1,11 +1,15 @@
 function Get-ManualNetworkAdapterWinSecureDNS {
 
     # Get the network adapters and their properties if their status is neither disabled, disconnected nor null
-    $Adapters = Get-NetAdapter | Where-Object { $_.Status -ne 'Disabled' -and $null -ne $_.Status -and $_.Status -ne 'Disconnected' }
+    [System.Object[]]$Adapters = Get-NetAdapter | Where-Object -FilterScript { 
+        ($_.Status -ne 'Disabled') -and ($null -ne $_.Status) -and ($_.Status -ne 'Disconnected')
+    }
+    
     # Get the maximum length of each property for formatting the output
-    $NameLength = ($Adapters.Name | Measure-Object -Maximum -Property Length).Maximum + 2
-    $DescriptionLength = ($Adapters.InterfaceDescription | Measure-Object -Maximum -Property Length).Maximum + 2
-    $MacLength = ($Adapters.MacAddress | Measure-Object -Maximum -Property Length).Maximum + 2
+    [System.UInt32]$NameLength = ($Adapters.Name | Measure-Object -Maximum -Property Length).Maximum + 2
+    [System.UInt32]$DescriptionLength = ($Adapters.InterfaceDescription | Measure-Object -Maximum -Property Length).Maximum + 2
+    [System.UInt32]$MacLength = ($Adapters.MacAddress | Measure-Object -Maximum -Property Length).Maximum + 2
+    
     # Not used because manually setting the width for it
     # $StatusLength = ($Adapters.Status | Measure-Object -Maximum -Property Length).Maximum + 2
     $LinkLength = ($Adapters.LinkSpeed | Measure-Object -Maximum -Property Length).Maximum + 2

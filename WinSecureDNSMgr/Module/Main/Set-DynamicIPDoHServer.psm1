@@ -84,7 +84,8 @@ function Set-DynamicIPDoHServer {
 
     # this is responsible for making the changes in Windows settings UI > Network and internet > $ActiveNetworkInterface.Name
     Set-DnsClientServerAddress -ServerAddresses $NewIPs -InterfaceIndex $ActiveNetworkInterface.ifIndex
-    # clear DNS client Cache
+    
+    Write-Verbose -Message 'Clearing the DNS client cache'
     Clear-DnsClientCache
   }
 
@@ -128,24 +129,24 @@ function Set-DynamicIPDoHServer {
 
   <#
 .SYNOPSIS
-Use a DNS over HTTPS (DoH) server with a dynamic IP address in Windows
+  Use a DNS over HTTPS (DoH) server with a dynamic IP address in Windows
 
 .LINK
-https://github.com/HotCakeX/WinSecureDNSMgr
+  https://github.com/HotCakeX/WinSecureDNSMgr
 
 .DESCRIPTION
-Easily use a DNS over HTTPS (DoH) server with a dynamic IP address in Windows
+  Easily use a DNS over HTTPS (DoH) server with a dynamic IP address in Windows
 
 .FUNCTIONALITY
-Sets a DNS over HTTPS (DoH) server in Windows DNS client settings and adds the DoH server to the Windows DoH template predefined list.
-It then updates the DoH server IP address in Windows DNS client settings whenever the IP address of the DoH server changes.
+  Sets a DNS over HTTPS (DoH) server in Windows DNS client settings and adds the DoH server to the Windows DoH template predefined list.
+  It then updates the DoH server IP address in Windows DNS client settings whenever the IP address of the DoH server changes.
 
 .PARAMETER DoHTemplate
-The DNS over HTTPS template of the server that has a dynamic IP address
+  The DNS over HTTPS template of the server that has a dynamic IP address
 
 .EXAMPLE
-Set-DDOH -DoHTemplate https://example.com/
-Set-DynamicIPDoHServer -DoHTemplate https://example.com/
+  Set-DDOH -DoHTemplate https://example.com/
+  Set-DynamicIPDoHServer -DoHTemplate https://example.com/
 
 #>
 }
