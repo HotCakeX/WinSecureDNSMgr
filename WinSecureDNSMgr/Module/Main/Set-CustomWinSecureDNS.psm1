@@ -7,7 +7,7 @@ function Set-CustomWinSecureDNS {
         [ValidateScript({ $_ -notmatch 'https://(cloudflare-dns|dns\.google|dns\.quad9)\.com/dns-query' }, ErrorMessage = 'The DoH template you selected is one of the Windows built-in ones. Please select a different DoH template or use the Set-BuiltInWinSecureDNS cmdlet.')]
         [Parameter(Mandatory)][System.String]$DoHTemplate,
 
-        [ValidateCount(1, 2)][System.Net.IPAddress[]]$IPV4s,        
+        [ValidateCount(1, 2)][System.Net.IPAddress[]]$IPV4s,
         [ValidateCount(1, 2)][System.Net.IPAddress[]]$IPV6s
     )
     begin {
@@ -91,7 +91,7 @@ function Set-CustomWinSecureDNS {
         # check if the IP addresses of the currently selected domain already exist and then delete them
         Get-DnsClientDohServerAddress | ForEach-Object -Process {
             if ($_.ServerAddress -in $IPV4s -or $_.ServerAddress -in $IPV6s) {
-                Remove-DnsClientDohServerAddress -ServerAddress $_.ServerAddress                
+                Remove-DnsClientDohServerAddress -ServerAddress $_.ServerAddress
             }
         }
 
