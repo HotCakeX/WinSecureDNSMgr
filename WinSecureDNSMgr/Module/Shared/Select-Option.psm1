@@ -6,7 +6,7 @@ function Select-Option {
     Begin {
         # Importing the $PSDefaultParameterValues to the current session, prior to everything else
         . "$WinSecureDNSMgrModuleRootPath\MainExt\PSDefaultParameterValues.ps1"
-        
+
         $Selected = $null
     }
 

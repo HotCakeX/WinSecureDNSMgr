@@ -8,7 +8,7 @@ Function Get-IPv6DoHServerIPAddressWinSecureDNSMgr {
     Begin {
         # Importing the $PSDefaultParameterValues to the current session, prior to everything else
         . "$WinSecureDNSMgrModuleRootPath\MainExt\PSDefaultParameterValues.ps1"
-        
+
         Import-Module -Name "$WinSecureDNSMgrModuleRootPath\Shared\Invoke-cURL.psm1" -Force
 
         # An array to store IP addresses

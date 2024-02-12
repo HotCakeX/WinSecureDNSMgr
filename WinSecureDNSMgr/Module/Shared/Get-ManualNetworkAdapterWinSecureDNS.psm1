@@ -22,7 +22,7 @@ function Get-ManualNetworkAdapterWinSecureDNS {
     }
 
     Process {
-        
+
         # Get the network adapters and their properties if their status is neither disabled, disconnected nor null
         [System.Object[]]$Adapters = Get-NetAdapter | Where-Object -FilterScript {
         ($_.Status -ne 'Disabled') -and ($null -ne $_.Status) -and ($_.Status -ne 'Disconnected')
