@@ -53,7 +53,7 @@ function Set-DynamicIPDoHServer {
       # defining registry path for DoH settings of the $ActiveNetworkInterface based on its GUID for IPv4
       [System.String]$PathV4 = "Registry::HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\Dnscache\InterfaceSpecificParameters\$($ActiveNetworkInterface.InterfaceGuid)\DohInterfaceSettings\Doh\$_"
 
-      # associating the new IPv4s with our DoH template in Windows DoH template predefined list
+      Write-Verbose -Message 'Associating the new IPv4s with the selected DoH template in Windows DoH template predefined list'
       Add-DnsClientDohServerAddress -ServerAddress $_ -DohTemplate $DoHTemplate -AllowFallbackToUdp $False -AutoUpgrade $True
 
       # add DoH settings for the specified Network adapter based on its GUID in registry
@@ -70,7 +70,7 @@ function Set-DynamicIPDoHServer {
       # defining registry path for DoH settings of the $ActiveNetworkInterface based on its GUID for IPv6
       [System.String]$PathV6 = "Registry::HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\Dnscache\InterfaceSpecificParameters\$($ActiveNetworkInterface.InterfaceGuid)\DohInterfaceSettings\Doh6\$_"
 
-      # associating the new IPv6s with our DoH template in Windows DoH template predefined list
+      Write-Verbose -Message 'Associating the new IPv6s with the selected DoH template in Windows DoH template predefined list'
       Add-DnsClientDohServerAddress -ServerAddress $_ -DohTemplate $DoHTemplate -AllowFallbackToUdp $False -AutoUpgrade $True
 
       # add DoH settings for the specified Network adapter based on its GUID in registry
