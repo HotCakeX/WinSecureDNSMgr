@@ -35,7 +35,13 @@ Function Get-IPv6DoHServerIPAddressWinSecureDNSMgr {
         }
         if (!$NewIPsV6) {
             Write-Host -Object "Fourth try failed, using any available system DNS to get the IPv6s for $Domain" -ForegroundColor Magenta
-            $NewIPsV6 = (Resolve-DnsName -Type AAAA -Name "$Domain" -NoHostsFile).ipaddress
+
+            try {
+                $NewIPsV6 = (Resolve-DnsName -Type AAAA -Name "$Domain" -NoHostsFile).ipaddress
+            }
+            catch {
+                Write-Warning -Message 'Could not find IPv6 for the domain using system DNS'
+            }
         }
     }
 

@@ -34,7 +34,14 @@ Function Get-IPv4DoHServerIPAddressWinSecureDNSMgr {
         }
         if (!$NewIPsV4) {
             Write-Host -Object "Fourth try failed, using any available system DNS to get the IPv4s for $Domain" -ForegroundColor Magenta
-            $NewIPsV4 = (Resolve-DnsName -Type A -Name "$Domain" -NoHostsFile).ipaddress
+
+            try {
+                $NewIPsV4 = (Resolve-DnsName -Type A -Name "$Domain" -NoHostsFile).ipaddress
+            }
+            catch {
+                Write-Warning -Message 'Could not find IPv4 for the domain using system DNS'
+            }
+
         }
     }
 

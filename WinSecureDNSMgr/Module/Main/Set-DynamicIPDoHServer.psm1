@@ -56,42 +56,65 @@ function Set-DynamicIPDoHServer {
     # Hyper-V assigns a new GUID to it, so it's better not to leave any leftover in the registry and clean up after ourselves
     Remove-Item -Path 'Registry::HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\Dnscache\InterfaceSpecificParameters\*' -Recurse
 
+    Write-Verbose -Message 'Getting the new IPv4s for the selected DoH server'
     [System.String[]]$NewIPsV4 = Get-IPv4DoHServerIPAddressWinSecureDNSMgr -Domain $Domain
 
-    # loop through each IPv4
-    $NewIPsV4 | ForEach-Object -Process {
+    if ($null -ne $NewIPsV4) {
 
-      # defining registry path for DoH settings of the $ActiveNetworkInterface based on its GUID for IPv4
-      [System.String]$PathV4 = "Registry::HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\Dnscache\InterfaceSpecificParameters\$($ActiveNetworkInterface.InterfaceGuid)\DohInterfaceSettings\Doh\$_"
+      Write-Verbose -Message "The new IPv4s are $NewIPsV4"
 
-      Write-Verbose -Message 'Associating the new IPv4s with the selected DoH template in Windows DoH template predefined list'
-      Add-DnsClientDohServerAddress -ServerAddress $_ -DohTemplate $DoHTemplate -AllowFallbackToUdp $False -AutoUpgrade $True | Out-Null
+      # loop over each IPv4
+      $NewIPsV4 | ForEach-Object -Process {
 
-      # add DoH settings for the specified Network adapter based on its GUID in registry
-      # value 1 for DohFlags key means use automatic template for DoH, 2 means manual template, since we add our template to Windows, it's predefined so we use value 1
-      New-Item -Path $PathV4 -Force | Out-Null
-      New-ItemProperty -Path $PathV4 -Name 'DohFlags' -Value '1' -PropertyType 'Qword' -Force | Out-Null
+        # defining registry path for DoH settings of the $ActiveNetworkInterface based on its GUID for IPv4
+        [System.String]$PathV4 = "Registry::HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\Dnscache\InterfaceSpecificParameters\$($ActiveNetworkInterface.InterfaceGuid)\DohInterfaceSettings\Doh\$_"
+
+        Write-Verbose -Message 'Associating the new IPv4s with the selected DoH template in Windows DoH template predefined list'
+        Add-DnsClientDohServerAddress -ServerAddress $_ -DohTemplate $DoHTemplate -AllowFallbackToUdp $False -AutoUpgrade $True | Out-Null
+
+        # add DoH settings for the specified Network adapter based on its GUID in registry
+        # value 1 for DohFlags key means use automatic template for DoH, 2 means manual template, since we add our template to Windows, it's predefined so we use value 1
+        New-Item -Path $PathV4 -Force | Out-Null
+        New-ItemProperty -Path $PathV4 -Name 'DohFlags' -Value '1' -PropertyType 'Qword' -Force | Out-Null
+      }
+    }
+    else {
+      Write-Verbose -Message 'IPv4s could not be found for the domain'
     }
 
+    Write-Verbose -Message 'Getting the new IPv6s for the selected DoH server'
     [System.String[]]$NewIPsV6 = Get-IPv6DoHServerIPAddressWinSecureDNSMgr -Domain $Domain
 
-    # loop through each IPv6
-    $NewIPsV6 | ForEach-Object -Process {
+    if ($null -ne $NewIPsV6) {
 
-      # defining registry path for DoH settings of the $ActiveNetworkInterface based on its GUID for IPv6
-      [System.String]$PathV6 = "Registry::HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\Dnscache\InterfaceSpecificParameters\$($ActiveNetworkInterface.InterfaceGuid)\DohInterfaceSettings\Doh6\$_"
+      Write-Verbose -Message "The new IPv6s are $NewIPsV6"
 
-      Write-Verbose -Message 'Associating the new IPv6s with the selected DoH template in Windows DoH template predefined list'
-      Add-DnsClientDohServerAddress -ServerAddress $_ -DohTemplate $DoHTemplate -AllowFallbackToUdp $False -AutoUpgrade $True | Out-Null
+      # loop over each IPv6
+      $NewIPsV6 | ForEach-Object -Process {
 
-      # add DoH settings for the specified Network adapter based on its GUID in registry
-      # value 1 for DohFlags key means use automatic template for DoH, 2 means manual template, since we already added our template to Windows, it's considered predefined, so we use value 1
-      New-Item -Path $PathV6 -Force | Out-Null
-      New-ItemProperty -Path $PathV6 -Name 'DohFlags' -Value '1' -PropertyType 'Qword' -Force | Out-Null
+        # defining registry path for DoH settings of the $ActiveNetworkInterface based on its GUID for IPv6
+        [System.String]$PathV6 = "Registry::HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\Dnscache\InterfaceSpecificParameters\$($ActiveNetworkInterface.InterfaceGuid)\DohInterfaceSettings\Doh6\$_"
+
+        Write-Verbose -Message 'Associating the new IPv6s with the selected DoH template in Windows DoH template predefined list'
+        Add-DnsClientDohServerAddress -ServerAddress $_ -DohTemplate $DoHTemplate -AllowFallbackToUdp $False -AutoUpgrade $True | Out-Null
+
+        # add DoH settings for the specified Network adapter based on its GUID in registry
+        # value 1 for DohFlags key means use automatic template for DoH, 2 means manual template, since we already added our template to Windows, it's considered predefined, so we use value 1
+        New-Item -Path $PathV6 -Force | Out-Null
+        New-ItemProperty -Path $PathV6 -Name 'DohFlags' -Value '1' -PropertyType 'Qword' -Force | Out-Null
+      }
+    }
+    else {
+      Write-Verbose -Message 'IPv6s could not be found for the domain'
     }
 
-    # gather IPv4s and IPv6s all in one place
-    [System.String[]]$NewIPs = $NewIPsV4 + $NewIPsV6
+    # If there are any IPv4 or IPv6, gather them all in one place
+    if ($NewIPsV4 -or $NewIPsV6) {
+      [System.String[]]$NewIPs = $NewIPsV4 + $NewIPsV6
+    }
+    else {
+      Throw 'No IPv4 or IPv6 could be found for the domain'
+    }
 
     # this is responsible for making the changes in Windows settings UI > Network and internet > $ActiveNetworkInterface.Name
     Set-DnsClientServerAddress -ServerAddresses $NewIPs -InterfaceIndex $ActiveNetworkInterface.ifIndex
@@ -128,13 +151,13 @@ function Set-DynamicIPDoHServer {
 
     Write-Verbose -Message 'Creating the 2nd trigger - Fires the task once in 3 hours with repetition intervals of every 6 hours (with a random delay of 30 seconds)'
     [Microsoft.Management.Infrastructure.CimInstance]$Time = New-ScheduledTaskTrigger -Once -At (Get-Date).AddHours(3) -RandomDelay (New-TimeSpan -Seconds 30) -RepetitionInterval (New-TimeSpan -Hours 6)
-    Register-ScheduledTask -Action $Action -Trigger $EventTrigger, $Time -Principal $TaskPrincipal -TaskPath 'DDoH' -TaskName 'Dynamic DoH Server IP check' -Description 'Checks for New IPs of our Dynamic DoH server' -Force
+    Register-ScheduledTask -Action $Action -Trigger $EventTrigger, $Time -Principal $TaskPrincipal -TaskPath 'DDoH' -TaskName 'Dynamic DoH Server IP check' -Description 'Checks for New IPs of our Dynamic DoH server' -Force | Out-Null
 
     # define advanced settings for the task
     [Microsoft.Management.Infrastructure.CimInstance]$TaskSettings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -Compatibility Win8 -StartWhenAvailable -ExecutionTimeLimit (New-TimeSpan -Minutes 1)
 
     # add advanced settings we defined to the task
-    Set-ScheduledTask -TaskPath 'DDoH' -TaskName 'Dynamic DoH Server IP check' -Settings $TaskSettings
+    Set-ScheduledTask -TaskPath 'DDoH' -TaskName 'Dynamic DoH Server IP check' -Settings $TaskSettings | Out-Null
 
   }
 
