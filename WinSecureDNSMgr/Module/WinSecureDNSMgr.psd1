@@ -113,7 +113,7 @@ https://github.com/HotCakeX/WinSecureDNSMgr
     VariablesToExport    = '*'
 
     # Aliases to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no aliases to export.
-    AliasesToExport      = @('Set-DOH', 'Set-CDOH', 'Set-DDOH')
+    AliasesToExport      = @('Set-DOH', 'Set-CDOH', 'Set-DDOH', 'Reset-DoH')
 
     # DSC resources to export from this module
     # DscResourcesToExport = @()
