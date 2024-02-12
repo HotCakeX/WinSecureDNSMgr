@@ -19,12 +19,12 @@ Function Get-DoHIPs {
 
     Begin {
         # Importing the $PSDefaultParameterValues to the current session, prior to everything else
-        . "$WinSecureDNSMgrModuleRootPath\MainExt\PSDefaultParameterValues.ps1"       
+        . "$WinSecureDNSMgrModuleRootPath\MainExt\PSDefaultParameterValues.ps1"
     }
 
     Process {
         $IPs = Invoke-RestMethod -Uri $Url -Method Get -Headers @{'accept' = 'application/dns-json' } -SkipCertificateCheck
-       
+
         # Only extract the IP address, sometimes the response contains other data such as texts
         [System.Net.IPAddress[]]$IPs = $IPs.answer.data | Where-Object -FilterScript { [System.Net.IPAddress]::TryParse($_ , [ref]$null) }
     }
