@@ -42,8 +42,10 @@ Function Invoke-cURL {
 
     # Enables "TLS_CHACHA20_POLY1305_SHA256" Cipher Suite for Windows 11, if necessary, because it's disabled by default
     # cURL will need that cipher suite to perform encrypted DNS query, it uses Windows Schannel
-    if (-NOT ((Get-TlsCipherSuite).name -contains 'TLS_CHACHA20_POLY1305_SHA256'))
-    { Enable-TlsCipherSuite -Name 'TLS_CHACHA20_POLY1305_SHA256' }
+    if (-NOT ((Get-TlsCipherSuite).name -contains 'TLS_CHACHA20_POLY1305_SHA256')) { 
+        Write-Verbose -Message 'Enabling TLS_CHACHA20_POLY1305_SHA256 Cipher Suite' -Verbose
+        Enable-TlsCipherSuite -Name 'TLS_CHACHA20_POLY1305_SHA256'
+    }
 
     $IPs = curl --ssl-no-revoke --max-time 10 --tlsv1.3 --tls13-ciphers TLS_CHACHA20_POLY1305_SHA256 --http2 -H 'accept: application/dns-json' $Url
     $IPs = ( $IPs | ConvertFrom-Json).answer.data
@@ -87,7 +89,6 @@ Function Get-IPv4DoHServerIPAddressWinSecureDNSMgr {
     }
 
     End {
-
         if ($NewIPsV4) {
             if ($NewIPsV4.count -gt 2) {
                 $NewIPsV4 = $NewIPsV4 | Select-Object -First 2
@@ -114,7 +115,6 @@ Function Get-IPv6DoHServerIPAddressWinSecureDNSMgr {
     }
 
     Process {
-
         # get the new IPv6s for $Domain
         Write-Host -Object "Using the main Cloudflare Encrypted API to resolve $Domain" -ForegroundColor Green
 
@@ -136,11 +136,9 @@ Function Get-IPv6DoHServerIPAddressWinSecureDNSMgr {
             Write-Host -Object "Fourth try failed, using any available system DNS to get the IPv6s for $Domain" -ForegroundColor Magenta
             $NewIPsV6 = (Resolve-DnsName -Type AAAA -Name "$Domain" -NoHostsFile).ipaddress
         }
-
     }
 
     End {
-
         if ($NewIPsV6) {
             # in case server had more than 2 IP addresses
             if ($NewIPsV6.count -gt 2) {
