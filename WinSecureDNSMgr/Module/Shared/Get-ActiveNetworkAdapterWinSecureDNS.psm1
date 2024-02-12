@@ -14,7 +14,13 @@ function Get-ActiveNetworkAdapterWinSecureDNS {
     .OUTPUTS
         Microsoft.Management.Infrastructure.CimInstance
     #>
-    try {
+
+    Begin {
+        # Importing the $PSDefaultParameterValues to the current session, prior to everything else
+        . "$WinSecureDNSMgrModuleRootPath\MainExt\PSDefaultParameterValues.ps1"
+    }
+    Process {
+
         # get the currently active network interface/adapter that is being used for Internet access
         # This gets the top most active adapter based on route metric
         $ActiveNetworkInterface = Get-NetRoute -DestinationPrefix '0.0.0.0/0', '::/0' -ErrorAction SilentlyContinue |
@@ -58,11 +64,10 @@ function Get-ActiveNetworkAdapterWinSecureDNS {
                 }
             }
         }
+    }
+    End {
         Write-Verbose -Message 'This is the automatically detected network adapter the module is going to set Secure DNS for'
         return [Microsoft.Management.Infrastructure.CimInstance]$ActiveNetworkInterface
-    }
-    catch {
-        Throw $_
     }
 }
 Export-ModuleMember -Function 'Get-ActiveNetworkAdapterWinSecureDNS'

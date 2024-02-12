@@ -14,4 +14,4 @@ catch {
 [System.String]$BuiltInDoHTemplatesReferenceJSON = Get-Content -Path "$WinSecureDNSMgrModuleRootPath\Shared\BuiltInDoHTemplatesReference.json"
 
 # Convert the JSON content to hashtable and make it available to the entire module
-$BuiltInDoHTemplatesReference = ConvertFrom-Json -AsHashtable -InputObject $BuiltInDoHTemplatesReferenceJSON
+$global:BuiltInDoHTemplatesReference = ConvertFrom-Json -AsHashtable -InputObject $BuiltInDoHTemplatesReferenceJSON

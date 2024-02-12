@@ -4,6 +4,9 @@ Function Reset-DoHSettings {
     [OutputType([System.Void])]
     param()
 
+    # Importing the $PSDefaultParameterValues to the current session, prior to everything else
+    . "$WinSecureDNSMgrModuleRootPath\MainExt\PSDefaultParameterValues.ps1"
+
     Write-Verbose -Message 'Displaying non-system DoH templates.'
     Get-DnsClientDohServerAddress | Where-Object -FilterScript { $_.DohTemplate -notin $BuiltInDoHTemplatesReference.Values.Values.Values } |
     ForEach-Object -Process {
