@@ -7,25 +7,28 @@ Function Set-BuiltInWinSecureDNS {
     )
     begin {
 
-        # Get the DoH domain of the Cloudflare from the hashtable - Since all of the DoH domains are identical for the same provider, only getting the first item in the array
+        # Get the DoH domain from the hashtable - Since all of the DoH domains are identical for the same provider, only getting the first item in the array
         [System.String]$DetectedDoHTemplate = ($BuiltInDoHTemplatesReference.GetEnumerator() | Where-Object { $_.Key -eq $DoHProvider }).Value.Values.Values[0]
 
         # Automatically detect the correct network adapter
         $ActiveNetworkInterface = Get-ActiveNetworkAdapterWinSecureDNS
         $ActiveNetworkInterface
 
-        # loop until the user confirms the detected adapter is the correct one, Selects the correct network adapter or Cancels
+        # Loop until the user confirms the detected adapter is the correct one, Selects the correct network adapter or Cancels
         switch (Select-Option -Options 'Yes', 'No - Select Manually', 'Cancel' -Message "`nIs the detected network adapter correct ?") {
             'Yes' {
                 $ActiveNetworkInterface = $ActiveNetworkInterface
             }
             'No - Select Manually' {
                 $ActiveNetworkInterface = Get-ManualNetworkAdapterWinSecureDNS
-            } # properly exiting this advanced function is a bit tricky, so we use a variable to control the loop
-            'Cancel' { $ShouldExit = $true; return }
+            }
+            'Cancel' { 
+                $ShouldExit = $true
+                return 
+            }
         }
 
-        # if user chose to cancel the Get-ManualNetworkAdapterWinSecureDNS function, set the $shouldExit variable to $true and exit the function in the Process block
+        # Set the $shouldExit variable to $true and exit the function in the subsequent blocks if no network adapter is selected
         if (!$ActiveNetworkInterface) { $ShouldExit = $true; return }
     }
 
@@ -75,8 +78,8 @@ Function Set-BuiltInWinSecureDNS {
         Set-DnsClientServerAddress -ServerAddresses $DoHIPs -InterfaceIndex $ActiveNetworkInterface.ifIndex -ErrorAction Stop
     }
 
-    end {
-        # if the user selected Cancel, do not proceed with the process block
+    End {
+        # if the user selected Cancel, do not proceed with the end block
         if ($ShouldExit) { break }
 
         # clear DNS client Cache
