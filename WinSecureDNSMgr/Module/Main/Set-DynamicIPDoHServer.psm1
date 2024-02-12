@@ -10,6 +10,11 @@ function Set-DynamicIPDoHServer {
   )
 
   begin {
+    # Detecting if Verbose switch is used
+    $PSBoundParameters.Verbose.IsPresent ? ([System.Boolean]$Verbose = $true) : ([System.Boolean]$Verbose = $false) | Out-Null
+
+    # Importing the $PSDefaultParameterValues to the current session, prior to everything else
+    . "$ModuleRootPath\MainExt\PSDefaultParameterValues.ps1"
 
     # Import sub-modules
     Import-Module -Name "$WinSecureDNSMgrModuleRootPath\Shared\Get-ActiveNetworkAdapterWinSecureDNS.psm1" -Force

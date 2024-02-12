@@ -3,23 +3,30 @@ function Select-Option {
         [parameter(Mandatory = $True, Position = 0)][System.String]$Message,
         [parameter(Mandatory = $True, Position = 1)][System.String[]]$Options
     )
-    $Selected = $null
-    while ($null -eq $Selected) {
+    Begin {
+        $Selected = $null
+    }
 
-        Write-Host -Object $Message -ForegroundColor Magenta
+    Process {
+        while ($null -eq $Selected) {
 
-        for ($i = 0; $i -lt $Options.Length; $i++) {
-            Write-Host -Object "$($i+1): $($Options[$i])"
-        }
-        $SelectedIndex = Read-Host -Prompt 'Select an option'
+            Write-Host -Object $Message -ForegroundColor Magenta
 
-        if ($SelectedIndex -gt 0 -and $SelectedIndex -le $Options.Length) {
-            $Selected = $Options[$SelectedIndex - 1]
-        }
-        else {
-            Write-Host -Object 'Invalid Option.' -ForegroundColor Yellow
+            for ($i = 0; $i -lt $Options.Length; $i++) {
+                Write-Host -Object "$($i+1): $($Options[$i])"
+            }
+            $SelectedIndex = Read-Host -Prompt 'Select an option'
+
+            if ($SelectedIndex -gt 0 -and $SelectedIndex -le $Options.Length) {
+                $Selected = $Options[$SelectedIndex - 1]
+            }
+            else {
+                Write-Host -Object 'Invalid Option.' -ForegroundColor Yellow
+            }
         }
     }
-    return $Selected
+    End {
+        return $Selected
+    }
 }
 Export-ModuleMember -Function 'Select-Option'

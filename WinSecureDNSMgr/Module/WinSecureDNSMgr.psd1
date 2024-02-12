@@ -137,7 +137,8 @@ https://github.com/HotCakeX/WinSecureDNSMgr
         'Main\Set-BuiltInWinSecureDNS.psm1',
         'Main\Set-CustomWinSecureDNS.psm1',
         'Main\Set-DynamicIPDoHServer.psm1',
-        'Main\Reset-DoHSettings.psm1'
+        'Main\Reset-DoHSettings.psm1',
+        'MainExt\PSDefaultParameterValues.ps1'
     )
 
     # Private data to pass to the module specified in RootModule/ModuleToProcess. This may also contain a PSData hashtable with additional module metadata used by PowerShell.
