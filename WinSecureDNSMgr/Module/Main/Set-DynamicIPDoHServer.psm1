@@ -1,6 +1,6 @@
 function Set-DynamicIPDoHServer {
   [Alias('Set-DDOH')]
-  [CmdletBinding(SupportsShouldProcess = $True)]
+  [CmdletBinding()]
   param (
     # checking to make sure the DoH template is valid and not one of the built-in ones
     [ValidatePattern('^https\:\/\/.+\..+\/.*', ErrorMessage = 'The value provided for the parameter DoHTemplate is not a valid DNS over HTTPS template. Please enter a valid DNS over HTTPS template that starts with https, has a TLD and a slash after it. E.g.: https://template.com/')]
@@ -51,29 +51,35 @@ function Set-DynamicIPDoHServer {
       [System.String[]]$NewIPsV4 = Get-IPv4DoHServerIPAddressWinSecureDNSMgr -Domain $Domain
 
       # loop through each IPv4
-      $NewIPsV4 | ForEach-Object {
+      $NewIPsV4 | ForEach-Object -Process {
+
         # defining registry path for DoH settings of the $ActiveNetworkInterface based on its GUID for IPv4
-        $Path = "HKLM:System\CurrentControlSet\Services\Dnscache\InterfaceSpecificParameters\$($ActiveNetworkInterface.InterfaceGuid)\DohInterfaceSettings\Doh\$_"
+        [System.String]$PathV4 = "HKLM:System\CurrentControlSet\Services\Dnscache\InterfaceSpecificParameters\$($ActiveNetworkInterface.InterfaceGuid)\DohInterfaceSettings\Doh\$_"
+
         # associating the new IPv4s with our DoH template in Windows DoH template predefined list
         Add-DnsClientDohServerAddress -ServerAddress $_ -DohTemplate $DoHTemplate -AllowFallbackToUdp $False -AutoUpgrade $True
+
         # add DoH settings for the specified Network adapter based on its GUID in registry
         # value 1 for DohFlags key means use automatic template for DoH, 2 means manual template, since we add our template to Windows, it's predefined so we use value 1
-        New-Item -Path $Path -Force | Out-Null
-        New-ItemProperty -Path $Path -Name 'DohFlags' -Value 1 -PropertyType Qword -Force
+        New-Item -Path $PathV4 -Force | Out-Null
+        New-ItemProperty -Path $PathV4 -Name 'DohFlags' -Value '1' -PropertyType 'Qword' -Force
       }
 
       [System.String[]]$NewIPsV6 = Get-IPv6DoHServerIPAddressWinSecureDNSMgr -Domain $Domain
 
       # loop through each IPv6
-      $NewIPsV6 | ForEach-Object {
+      $NewIPsV6 | ForEach-Object -Process {
+
         # defining registry path for DoH settings of the $ActiveNetworkInterface based on its GUID for IPv6
-        $Path = "HKLM:System\CurrentControlSet\Services\Dnscache\InterfaceSpecificParameters\$($ActiveNetworkInterface.InterfaceGuid)\DohInterfaceSettings\Doh6\$_"
+        [System.String]$PathV6 = "HKLM:System\CurrentControlSet\Services\Dnscache\InterfaceSpecificParameters\$($ActiveNetworkInterface.InterfaceGuid)\DohInterfaceSettings\Doh6\$_"
+
         # associating the new IPv6s with our DoH template in Windows DoH template predefined list
         Add-DnsClientDohServerAddress -ServerAddress $_ -DohTemplate $DoHTemplate -AllowFallbackToUdp $False -AutoUpgrade $True
+
         # add DoH settings for the specified Network adapter based on its GUID in registry
         # value 1 for DohFlags key means use automatic template for DoH, 2 means manual template, since we already added our template to Windows, it's considered predefined, so we use value 1
-        New-Item -Path $Path -Force | Out-Null
-        New-ItemProperty -Path $Path -Name 'DohFlags' -Value 1 -PropertyType Qword -Force
+        New-Item -Path $PathV6 -Force | Out-Null
+        New-ItemProperty -Path $PathV6 -Name 'DohFlags' -Value '1' -PropertyType 'Qword' -Force
       }
 
       # gather IPv4s and IPv6s all in one place
@@ -96,9 +102,9 @@ function Set-DynamicIPDoHServer {
   end {
 
     # here we enable logging for the event log below (which is disabled by default) and set its log size from the default 1MB to 2MB
-    $LogName = 'Microsoft-Windows-DNS-Client/Operational'
+    [System.String]$LogName = 'Microsoft-Windows-DNS-Client/Operational'
 
-    $Log = New-Object System.Diagnostics.Eventing.Reader.EventLogConfiguration $LogName
+    [System.Diagnostics.Eventing.Reader.EventLogConfiguration]$Log = New-Object -TypeName System.Diagnostics.Eventing.Reader.EventLogConfiguration -ArgumentList $LogName
     $Log.MaximumSizeInBytes = 2048000
     $Log.IsEnabled = $True
     $Log.SaveChanges()
