@@ -12,7 +12,7 @@
     RootModule           = 'WinSecureDNSMgr.psm1'
 
     # Version number of this module.
-    ModuleVersion        = '0.0.4'
+    ModuleVersion        = '0.0.5'
 
     # Supported PSEditions
     CompatiblePSEditions = @('Core')
@@ -67,7 +67,7 @@ https://github.com/HotCakeX/WinSecureDNSMgr
 '@
 
     # Minimum version of the PowerShell engine required by this module
-    PowerShellVersion    = '7.3.4'
+    PowerShellVersion    = '7.4.1'
 
     # Name of the PowerShell host required by this module
     # PowerShellHostName = ''
@@ -91,7 +91,7 @@ https://github.com/HotCakeX/WinSecureDNSMgr
     # RequiredAssemblies = @()
 
     # Script files (.ps1) that are run in the caller's environment prior to importing this module.
-    # ScriptsToProcess = @()
+    ScriptsToProcess     = @('Preloader.ps1')
 
     # Type files (.ps1xml) to be loaded when importing this module
     # TypesToProcess = @()
