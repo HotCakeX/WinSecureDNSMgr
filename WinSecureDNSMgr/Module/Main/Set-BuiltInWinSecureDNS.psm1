@@ -25,6 +25,7 @@ Function Set-BuiltInWinSecureDNS {
                 [Microsoft.Management.Infrastructure.CimInstance]$ActiveNetworkInterface = Get-ManualNetworkAdapterWinSecureDNS
             }
             'Cancel' {
+                Write-Host -Object 'Exiting...' -ForegroundColor Yellow
                 # Set the $shouldExit variable to $True indicating the subsequent blocks to exit the function
                 [System.Boolean]$ShouldExit = $True
                 return
