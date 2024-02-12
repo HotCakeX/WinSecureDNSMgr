@@ -102,17 +102,20 @@ https://github.com/HotCakeX/WinSecureDNSMgr
     # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
     NestedModules        = @('Main\Set-BuiltInWinSecureDNS.psm1',
         'Main\Set-CustomWinSecureDNS.psm1',
-        'Main\Set-DynamicIPDoHServer.psm1')
+        'Main\Set-DynamicIPDoHServer.psm1',
+        'Main\Reset-DoHSettings.psm1')
 
     # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
     FunctionsToExport    = @('Set-BuiltInWinSecureDNS',
         'Set-CustomWinSecureDNS',
-        'Set-DynamicIPDoHServer')
+        'Set-DynamicIPDoHServer',
+        'Reset-DoHSettings')
 
     # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
     CmdletsToExport      = @('Set-BuiltInWinSecureDNS',
         'Set-CustomWinSecureDNS',
-        'Set-DynamicIPDoHServer')
+        'Set-DynamicIPDoHServer',
+        'Reset-DoHSettings')
 
     # Variables to export from this module
     VariablesToExport    = '*'
@@ -133,11 +136,11 @@ https://github.com/HotCakeX/WinSecureDNSMgr
         'Shared\Get-ActiveNetworkAdapterWinSecureDNS.psm1',
         'Shared\Get-ManualNetworkAdapterWinSecureDNS.psm1',
         'Shared\CommonResources.psm1',
-        'Shared\Remove-ExcessDoHTemplates.psm1',
         'Shared\BuiltInDoHTemplatesReference.json'
         'Main\Set-BuiltInWinSecureDNS.psm1',
         'Main\Set-CustomWinSecureDNS.psm1',
-        'Main\Set-DynamicIPDoHServer.psm1'
+        'Main\Set-DynamicIPDoHServer.psm1',
+        'Main\Reset-DoHSettings.psm1'
     )
 
     # Private data to pass to the module specified in RootModule/ModuleToProcess. This may also contain a PSData hashtable with additional module metadata used by PowerShell.

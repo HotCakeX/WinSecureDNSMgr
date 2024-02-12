@@ -1,9 +1,9 @@
 Function Set-BuiltInWinSecureDNS {
     [Alias('Set-DOH')]
-    [CmdletBinding(SupportsShouldProcess = $true)]
+    [CmdletBinding()]
     param (
         [ValidateScript({ $_ -in $BuiltInDoHTemplatesReference.Keys }, ErrorMessage = 'The selected DNS over HTTPS provider is not supported by Windows. Please select a different provider or use the Set-CustomWinSecureDNS cmdlet.')]
-        [Parameter(Mandatory)][System.String]$DoHProvider
+        [Parameter(Mandatory = $true)][System.String]$DoHProvider
     )
     begin {
 
@@ -76,6 +76,9 @@ Function Set-BuiltInWinSecureDNS {
     }
 
     end {
+        # if the user selected Cancel, do not proceed with the process block
+        if ($ShouldExit) { break }
+
         # clear DNS client Cache
         Clear-DnsClientCache
 
