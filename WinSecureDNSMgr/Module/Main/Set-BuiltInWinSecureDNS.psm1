@@ -120,5 +120,7 @@ Function Set-BuiltInWinSecureDNS {
 .EXAMPLE
     Set-BuiltInWinSecureDNS -DoHProvider Cloudflare
     Set-DOH -DoHProvider Cloudflare
+.PARAMETER Verbose
+    Switch to enable verbose output
 #>
 }

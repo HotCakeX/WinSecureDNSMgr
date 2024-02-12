@@ -199,6 +199,8 @@ function Set-CustomWinSecureDNS {
     Enter 1 or 2 IPv4 and/or IPv6 addresses separated by comma
 .PARAMETER IPV6s
     Enter 1 or 2 IPv4 and/or IPv6 addresses separated by comma
+.PARAMETER Verbose
+    Switch to enable verbose output
 .EXAMPLE
     Set-CustomWinSecureDNS -DoHTemplate https://example.com/
     Set-CDOH -DoHTemplate https://example.com -IPV4s 1.2.3.4 -IPV6s 2001:db8::8a2e:370:7334

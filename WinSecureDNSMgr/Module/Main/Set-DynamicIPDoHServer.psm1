@@ -139,6 +139,8 @@ function Set-DynamicIPDoHServer {
   It then updates the DoH server IP address in Windows DNS client settings whenever the IP address of the DoH server changes.
 .PARAMETER DoHTemplate
   The DNS over HTTPS template of the server that has a dynamic IP address
+.PARAMETER Verbose
+  Switch to enable verbose output
 .EXAMPLE
   Set-DDOH -DoHTemplate https://example.com/
   Set-DynamicIPDoHServer -DoHTemplate https://example.com/

@@ -48,5 +48,7 @@ Function Reset-DoHSettings {
     None
 .OUTPUTS
     System.Void
+.PARAMETER Verbose
+    Switch to enable verbose output
 #>
 }
