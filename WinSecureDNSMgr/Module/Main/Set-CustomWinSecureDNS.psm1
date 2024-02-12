@@ -103,7 +103,7 @@ function Set-CustomWinSecureDNS {
         # delete all other previous DoH settings for ALL Interface - Windows behavior in settings when changing DoH settings is to delete all DoH settings for the interface we are modifying
         # but we need to delete all DoH settings for ALL interfaces in here because every time we virtualize a network adapter with external switch of Hyper-V,
         # Hyper-V assigns a new GUID to it, so it's better not to leave any leftover in the registry and clean up after ourselves
-        Remove-Item -Path 'HKLM:System\CurrentControlSet\Services\Dnscache\InterfaceSpecificParameters\*' -Recurse
+        Remove-Item -Path 'Registry::HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\Dnscache\InterfaceSpecificParameters\*' -Recurse
 
         if ($null -ne $IPV4s) {
 
@@ -111,7 +111,7 @@ function Set-CustomWinSecureDNS {
             $IPV4s | ForEach-Object -Process {
 
                 # defining registry path for DoH settings of the $ActiveNetworkInterface based on its GUID for IPv4
-                [System.String]$PathV4 = "HKLM:System\CurrentControlSet\Services\Dnscache\InterfaceSpecificParameters\$($ActiveNetworkInterface.InterfaceGuid)\DohInterfaceSettings\Doh\$_"
+                [System.String]$PathV4 = "Registry::HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\Dnscache\InterfaceSpecificParameters\$($ActiveNetworkInterface.InterfaceGuid)\DohInterfaceSettings\Doh\$_"
 
                 # associating the new IPv4s with our DoH template in Windows DoH template predefined list
                 Add-DnsClientDohServerAddress -ServerAddress $_ -DohTemplate $DoHTemplate -AllowFallbackToUdp $False -AutoUpgrade $True
@@ -130,7 +130,7 @@ function Set-CustomWinSecureDNS {
             $IPV6s | ForEach-Object -Process {
 
                 # defining registry path for DoH settings of the $ActiveNetworkInterface based on its GUID for IPv6
-                [System.String]$PathV6 = "HKLM:System\CurrentControlSet\Services\Dnscache\InterfaceSpecificParameters\$($ActiveNetworkInterface.InterfaceGuid)\DohInterfaceSettings\Doh6\$_"
+                [System.String]$PathV6 = "Registry::HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\Dnscache\InterfaceSpecificParameters\$($ActiveNetworkInterface.InterfaceGuid)\DohInterfaceSettings\Doh6\$_"
 
                 # associating the new IPv6s with our DoH template in Windows DoH template predefined list
                 Add-DnsClientDohServerAddress -ServerAddress $_ -DohTemplate $DoHTemplate -AllowFallbackToUdp $False -AutoUpgrade $True
