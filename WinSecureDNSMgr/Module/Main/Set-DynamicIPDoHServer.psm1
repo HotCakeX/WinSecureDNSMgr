@@ -99,31 +99,31 @@ function Set-DynamicIPDoHServer {
 
     Write-Verbose -Message 'Creating the scheduled task'
     [Microsoft.Management.Infrastructure.CimInstance]$Action = New-ScheduledTaskAction -Execute 'pwsh.exe' -Argument "-executionPolicy bypass -command `"Set-DynamicIPDoHServer -DoHTemplate '$DoHTemplate'`""
-    
+
     [Microsoft.Management.Infrastructure.CimInstance]$TaskPrincipal = New-ScheduledTaskPrincipal -LogonType S4U -UserId $env:USERNAME -RunLevel Highest
-    
+
     Write-Verbose -Message 'Creating the 1st trigger - Fires the task when DNS Client event logs indicate the DNS servers are unreachable'
     [Microsoft.Management.Infrastructure.CimClass]$CIMTriggerClass = Get-CimClass -ClassName MSFT_TaskEventTrigger -Namespace Root/Microsoft/Windows/TaskScheduler:MSFT_TaskEventTrigger
-    
+
     [Microsoft.Management.Infrastructure.CimInstance]$EventTrigger = New-CimInstance -CimClass $CIMTriggerClass -ClientOnly
-    
+
     $EventTrigger.Subscription =
     @'
 <QueryList><Query Id="0" Path="Microsoft-Windows-DNS-Client/Operational"><Select Path="Microsoft-Windows-DNS-Client/Operational">*[System[Provider[@Name='Microsoft-Windows-DNS-Client'] and EventID=1013]]</Select></Query></QueryList>
 '@
     $EventTrigger.Enabled = $True
     $EventTrigger.ExecutionTimeLimit = 'PT1M'
-    
+
     Write-Verbose -Message 'Creating the 2nd trigger - Fires the task once in 3 hours with repetition intervals of every 6 hours (with a random delay of 30 seconds)'
     [Microsoft.Management.Infrastructure.CimInstance]$Time = New-ScheduledTaskTrigger -Once -At (Get-Date).AddHours(3) -RandomDelay (New-TimeSpan -Seconds 30) -RepetitionInterval (New-TimeSpan -Hours 6)
     Register-ScheduledTask -Action $Action -Trigger $EventTrigger, $Time -Principal $TaskPrincipal -TaskPath 'DDoH' -TaskName 'Dynamic DoH Server IP check' -Description 'Checks for New IPs of our Dynamic DoH server' -Force
-    
+
     # define advanced settings for the task
     [Microsoft.Management.Infrastructure.CimInstance]$TaskSettings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -Compatibility Win8 -StartWhenAvailable -ExecutionTimeLimit (New-TimeSpan -Minutes 1)
-    
+
     # add advanced settings we defined to the task
     Set-ScheduledTask -TaskPath 'DDoH' -TaskName 'Dynamic DoH Server IP check' -Settings $TaskSettings
-  
+
   }
 
   <#
