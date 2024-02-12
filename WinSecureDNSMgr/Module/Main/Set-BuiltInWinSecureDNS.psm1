@@ -25,18 +25,22 @@ Function Set-BuiltInWinSecureDNS {
                 [Microsoft.Management.Infrastructure.CimInstance]$ActiveNetworkInterface = Get-ManualNetworkAdapterWinSecureDNS
             }
             'Cancel' {
+                # Set the $shouldExit variable to $True indicating the subsequent blocks to exit the function
                 [System.Boolean]$ShouldExit = $True
                 return
             }
         }
 
         # Set the $shouldExit variable to $True and exit the function in the subsequent blocks if no network adapter is selected
-        if (!$ActiveNetworkInterface) { $ShouldExit = $True; return }
+        if (!$ActiveNetworkInterface) {
+            $ShouldExit = $True
+            return
+        }
     }
 
     process {
         # if the user selected Cancel, do not proceed with the process block
-        if ($ShouldExit) { break }
+        if ($ShouldExit) { Return }
 
         # reset the network adapter's DNS servers back to default to take care of any IPv6 strays
         Set-DnsClientServerAddress -InterfaceIndex $ActiveNetworkInterface.ifIndex -ResetServerAddresses
@@ -86,7 +90,7 @@ Function Set-BuiltInWinSecureDNS {
 
     End {
         # if the user selected Cancel, do not proceed with the end block
-        if ($ShouldExit) { break }
+        if ($ShouldExit) { Return }
 
         Write-Verbose -Message 'Clearing the DNS client cache'
         Clear-DnsClientCache

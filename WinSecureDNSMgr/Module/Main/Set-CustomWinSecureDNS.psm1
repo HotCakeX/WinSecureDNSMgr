@@ -16,10 +16,18 @@ function Set-CustomWinSecureDNS {
 
         # If IP addresses were provided manually by user, verify their version
         if ($IPV4s) {
-            $IPV4s | ForEach-Object -Process { if ($_.AddressFamily -ne 'InterNetwork') { throw "The IP address $_ is not a valid IPv4 address." } }
+            $IPV4s | ForEach-Object -Process {
+                if ($_.AddressFamily -ne 'InterNetwork') {
+                    throw "The IP address $_ is not a valid IPv4 address."
+                }
+            }
         }
         if ($IPV6s) {
-            $IPV6s | ForEach-Object -Process { if ($_.AddressFamily -ne 'InterNetworkV6') { throw "The IP address $_ is not a valid IPv6 address." } }
+            $IPV6s | ForEach-Object -Process {
+                if ($_.AddressFamily -ne 'InterNetworkV6') {
+                    throw "The IP address $_ is not a valid IPv6 address."
+                }
+            }
         }
 
         # if no IP addresses were provided manually by user, set the $AutoDetectDoHIPs variable to $True
@@ -69,7 +77,10 @@ function Set-CustomWinSecureDNS {
 
             # If no IP addresses were found for either versions, exit the function
             if (($null -eq $IPV4s) -and ($null -eq $IPV6s)) {
+
                 Throw "No IP addresses were found for the domain $Domain. Please make sure the domain is valid and try again, alternatively you can use the Set-BuiltInWinSecureDNS cmdlet to set one of the built-in DoH templates."
+
+                # Set the flag to indicate the subsequent blocks should be skipped
                 [System.Boolean]$ShouldExit = $True
                 return
             }
@@ -78,10 +89,10 @@ function Set-CustomWinSecureDNS {
     process {
 
         # if the user selected Cancel, do not proceed with the process block
-        if ($ShouldExit) { break }
+        if ($ShouldExit) { Return }
 
         # check if there is any IP address already associated with "$DoHTemplate" template
-        $OldIPs = (Get-DnsClientDohServerAddress | Where-Object { $_.dohTemplate -eq $DoHTemplate }).serveraddress
+        $OldIPs = (Get-DnsClientDohServerAddress | Where-Object { $_.dohTemplate -eq $DoHTemplate }).ServerAddress
 
         # if there is, remove them
         if ($OldIPs) {
@@ -90,14 +101,14 @@ function Set-CustomWinSecureDNS {
             }
         }
 
-        # check if the IP addresses of the currently selected domain already exist and then delete them
+        Write-Verbose -Message 'Checking if the IP addresses of the currently selected DoH domain already exist and then deleting them'
         Get-DnsClientDohServerAddress | ForEach-Object -Process {
-            if ($_.ServerAddress -in $IPV4s -or $_.ServerAddress -in $IPV6s) {
+            if (($_.ServerAddress -in $IPV4s) -or ($_.ServerAddress -in $IPV6s)) {
                 Remove-DnsClientDohServerAddress -ServerAddress $_.ServerAddress
             }
         }
 
-        # reset the network adapter's DNS servers back to default to take care of any IPv6 strays
+        Write-Verbose -Message 'Resetting the network adapter DNS servers back to default to take care of any IPv6 strays'
         Set-DnsClientServerAddress -InterfaceIndex $ActiveNetworkInterface.ifIndex -ResetServerAddresses
 
         # delete all other previous DoH settings for ALL Interface - Windows behavior in settings when changing DoH settings is to delete all DoH settings for the interface we are modifying
@@ -107,7 +118,7 @@ function Set-CustomWinSecureDNS {
 
         if ($null -ne $IPV4s) {
 
-            # loop through each IPv4
+            Write-Verbose -Message 'Adding the new IPv4 addresses to the DoH template in Windows DoH template predefined list'
             $IPV4s | ForEach-Object -Process {
 
                 # defining registry path for DoH settings of the $ActiveNetworkInterface based on its GUID for IPv4
@@ -126,7 +137,7 @@ function Set-CustomWinSecureDNS {
         # Making sure the DoH server supports and has IPv6 addresses
         if ($null -ne $IPV6s) {
 
-            # loop through each IPv6
+            Write-Verbose -Message 'Adding the new IPv6 addresses to the DoH template in Windows DoH template predefined list'
             $IPV6s | ForEach-Object -Process {
 
                 # defining registry path for DoH settings of the $ActiveNetworkInterface based on its GUID for IPv6
@@ -143,7 +154,7 @@ function Set-CustomWinSecureDNS {
         }
 
         # gather IPv4s and IPv6s all in one place
-        [System.String[]]$NewIPs = $IPV4s + $IPV6s
+        [System.Net.IPAddress[]]$NewIPs = $IPV4s + $IPV6s
 
         # this is responsible for making the changes in Windows settings UI > Network and internet > $ActiveNetworkInterface.Name
         Set-DnsClientServerAddress -ServerAddresses $NewIPs -InterfaceIndex $ActiveNetworkInterface.ifIndex
@@ -151,19 +162,21 @@ function Set-CustomWinSecureDNS {
     }
 
     end {
-        if ($ShouldExit) { break }
+        if ($ShouldExit) { Return }
 
-        # clear DNS client Cache
+        Write-Verbose -Message 'Clearing the DNS client cache'
         Clear-DnsClientCache
 
         Write-Host -Object "DNS over HTTPS has been successfully configured for $($ActiveNetworkInterface.Name) using $DoHTemplate template." -ForegroundColor Green
 
-        # Define the name and path of the task
+        # Define the name and path of the scheduled task for DDoH
         [System.String]$TaskName = 'Dynamic DoH Server IP check'
         [System.String]$TaskPath = '\DDoH\'
 
-        # Try to get the Dynamic DoH task and delete it if it exists
         if (Get-ScheduledTask -TaskName $TaskName -TaskPath $TaskPath -ErrorAction SilentlyContinue) {
+
+            Write-Verbose -Message 'Deleting the Dynamic DoH scheduled task because it is no longer needed as a new type of DoH is being used now'
+
             Unregister-ScheduledTask -TaskName $TaskName -TaskPath $TaskPath -Confirm:$false
         }
     }
