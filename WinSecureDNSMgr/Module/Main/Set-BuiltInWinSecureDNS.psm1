@@ -12,6 +12,8 @@ Function Set-BuiltInWinSecureDNS {
 
         # Automatically detect the correct network adapter
         [Microsoft.Management.Infrastructure.CimInstance]$ActiveNetworkInterface = Get-ActiveNetworkAdapterWinSecureDNS
+        
+        # Display the detected network adapter and ask the user if it's correct
         $ActiveNetworkInterface
 
         # Loop until the user confirms the detected adapter is the correct one, Selects the correct network adapter or Cancels
