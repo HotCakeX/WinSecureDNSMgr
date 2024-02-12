@@ -7,10 +7,7 @@ function Set-CustomWinSecureDNS {
         [ValidateScript({ $_ -notmatch 'https://(cloudflare-dns|dns\.google|dns\.quad9)\.com/dns-query' }, ErrorMessage = 'The DoH template you selected is one of the Windows built-in ones. Please select a different DoH template or use the Set-BuiltInWinSecureDNS cmdlet.')]
         [Parameter(Mandatory)][System.String]$DoHTemplate,
 
-        # The parameter can either accept 1 or 2 IPv4 addresses
-        [ValidateCount(1, 2)][System.Net.IPAddress[]]$IPV4s,
-
-        # The parameter can either accept 1 or 2 IPv6 addresses
+        [ValidateCount(1, 2)][System.Net.IPAddress[]]$IPV4s,        
         [ValidateCount(1, 2)][System.Net.IPAddress[]]$IPV6s
     )
     begin {
@@ -63,6 +60,7 @@ function Set-CustomWinSecureDNS {
             $Domain = $Matches[0]
 
             Write-Verbose -Message "The extracted domain name is $Domain"
+
             # Get the IP addresses of the DoH domain
             $IPV4s = Get-IPv4DoHServerIPAddressWinSecureDNSMgr -Domain $Domain
             $IPV6s = Get-IPv6DoHServerIPAddressWinSecureDNSMgr -Domain $Domain
@@ -85,7 +83,7 @@ function Set-CustomWinSecureDNS {
 
         # if there is, remove them
         if ($OldIPs) {
-            $OldIPs | ForEach-Object {
+            $OldIPs | ForEach-Object -Process {
                 Remove-DnsClientDohServerAddress -ServerAddress $_
             }
         }
@@ -93,8 +91,7 @@ function Set-CustomWinSecureDNS {
         # check if the IP addresses of the currently selected domain already exist and then delete them
         Get-DnsClientDohServerAddress | ForEach-Object -Process {
             if ($_.ServerAddress -in $IPV4s -or $_.ServerAddress -in $IPV6s) {
-                Remove-DnsClientDohServerAddress -ServerAddress $_.ServerAddress
-                $_
+                Remove-DnsClientDohServerAddress -ServerAddress $_.ServerAddress                
             }
         }
 
