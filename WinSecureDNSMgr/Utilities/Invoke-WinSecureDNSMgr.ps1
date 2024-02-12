@@ -4,7 +4,7 @@
 [System.String]$ScriptFilePath = ($MyInvocation.MyCommand.path | Split-Path -Parent)
 
 # Import the module into the current scope using the relative path of the module itself
-Import-Module -FullyQualifiedName "$ScriptFilePath\..\Main\WinSecureDNSMgr.psd1" -Force
+Import-Module -FullyQualifiedName "$ScriptFilePath\..\Module\WinSecureDNSMgr.psd1" -Force
 
 # Run the commands below
 set-doh -DoHProvider Cloudflare
