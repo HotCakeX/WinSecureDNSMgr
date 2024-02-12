@@ -4,7 +4,6 @@ function WritePink { Write-Host -Object "$($PSStyle.Foreground.FromRGB(255,0,230
 function WriteLavender { Write-Host -Object "$($PSStyle.Foreground.FromRgb(255,179,255))$($args[0])$($PSStyle.Reset)" -NoNewline }
 function WriteTeaGreen { Write-Host -Object "$($PSStyle.Foreground.FromRgb(133, 222, 119))$($args[0])$($PSStyle.Reset)" -NoNewline }
 
-
 function Select-Option {
     param(
         [parameter(Mandatory = $True, Position = 0)][System.String]$Message,
@@ -85,7 +84,6 @@ Function Get-IPv4DoHServerIPAddressWinSecureDNSMgr {
             Write-Host -Object "Fourth try failed, using any available system DNS to get the IPv4s for $Domain" -ForegroundColor Magenta
             $NewIPsV4 = (Resolve-DnsName -Type A -Name "$Domain" -NoHostsFile).ipaddress
         }
-
     }
 
     End {
