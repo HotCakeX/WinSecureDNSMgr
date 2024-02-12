@@ -4,7 +4,7 @@ Function Set-BuiltInWinSecureDNS {
     [OutputType([System.String], [Microsoft.Management.Infrastructure.CimInstance])]
     param (
         [ValidateSet('Cloudflare', 'Google', 'Quad9', ErrorMessage = 'The selected DNS over HTTPS provider is not supported by Windows. Please select a different provider or use the Set-CustomWinSecureDNS cmdlet.')]
-        [Parameter(Mandatory = $True)][System.String]$DoHProvider
+        [Parameter(Mandatory = $false)][System.String]$DoHProvider = 'Cloudflare'
     )
     begin {
         # Detecting if Verbose switch is used
@@ -128,6 +128,7 @@ Function Set-BuiltInWinSecureDNS {
     Easily and quickly configure DNS over HTTPS (DoH) in Windows
 .PARAMETER DoHProvider
     The name of the 3 built-in DNS over HTTPS providers: Cloudflare, Google and Quad9
+    If no value is provided, the default provider is Cloudflare
 .EXAMPLE
     Set-BuiltInWinSecureDNS -DoHProvider Cloudflare
     Set-DOH -DoHProvider Cloudflare
