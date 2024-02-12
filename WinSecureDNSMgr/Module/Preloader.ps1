@@ -15,4 +15,3 @@ catch {
 
 # Convert the JSON content to hashtable and make it available to the entire module
 $BuiltInDoHTemplatesReference = ConvertFrom-Json -AsHashtable -InputObject $BuiltInDoHTemplatesReferenceJSON
-
