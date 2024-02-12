@@ -7,4 +7,4 @@
 Import-Module -FullyQualifiedName "$ScriptFilePath\..\Module\WinSecureDNSMgr.psd1" -Force
 
 # Run the commands below
-set-doh -DoHProvider Cloudflare
+# Set-DOH -DoHProvider Cloudflare -Verbose
