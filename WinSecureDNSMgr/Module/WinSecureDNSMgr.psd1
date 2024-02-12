@@ -133,6 +133,7 @@ https://github.com/HotCakeX/WinSecureDNSMgr
         'Shared\Get-ActiveNetworkAdapterWinSecureDNS.psm1',
         'Shared\Get-ManualNetworkAdapterWinSecureDNS.psm1',
         'Shared\CommonResources.psm1',
+        'Shared\Remove-ExcessDoHTemplates.psm1',
         'Main\Set-BuiltInWinSecureDNS.psm1',
         'Main\Set-CustomWinSecureDNS.psm1',
         'Main\Set-DynamicIPDoHServer.psm1'
