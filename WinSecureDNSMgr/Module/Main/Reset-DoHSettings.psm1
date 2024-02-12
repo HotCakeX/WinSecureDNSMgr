@@ -1,4 +1,5 @@
 Function Reset-DoHSettings {
+    [Alias('Reset-DoH')]
     [CmdletBinding()]
     [OutputType([System.Void])]
     param()
