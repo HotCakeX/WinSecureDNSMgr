@@ -2,26 +2,13 @@ Function Set-BuiltInWinSecureDNS {
     [Alias('Set-DOH')]
     [CmdletBinding(SupportsShouldProcess = $true)]
     param (
-        [ValidateSet('Cloudflare', 'Google', 'Quad9', ErrorMessage = 'The selected DNS over HTTPS provider is not supported by Windows. Please select a different provider or use the Set-CustomWinSecureDNS cmdlet.')]
-        [Parameter(Mandatory)][string]$DoHProvider
+        [ValidateScript({ $_ -in $BuiltInDoHTemplatesReference.Keys }, ErrorMessage = 'The selected DNS over HTTPS provider is not supported by Windows. Please select a different provider or use the Set-CustomWinSecureDNS cmdlet.')]
+        [Parameter(Mandatory)][System.String]$DoHProvider
     )
     begin {
 
-        Switch ($DoHProvider) {
-            'cloudflare' {
-                $DetectedDoHTemplate = 'https://cloudflare-dns.com/dns-query'
-            }
-            'Google' {
-                $DetectedDoHTemplate = 'https://dns.google/dns-query'
-            }
-            'Quad9' {
-                $DetectedDoHTemplate = 'https://dns.quad9.net/dns-query'
-            }
-        }
-
-        if (-NOT ((Get-DnsClientDohServerAddress | Where-Object { $_.DohTemplate -eq $DetectedDoHTemplate }).DohTemplate) ) {
-            throw "The DNS over HTTPS provider $DoHProvider is not supported by Windows. Please select a different provider."
-        }
+        # Get the DoH domain of the Cloudflare from the hashtable - Since all of the DoH domains are identical for the same provider, only getting the first item in the array
+        [System.String]$DetectedDoHTemplate = ($BuiltInDoHTemplatesReference.GetEnumerator() | Where-Object { $_.Key -eq $DoHProvider }).Value.Values.Values[0]
 
         # Automatically detect the correct network adapter
         $ActiveNetworkInterface = Get-ActiveNetworkAdapterWinSecureDNS
@@ -52,7 +39,7 @@ Function Set-BuiltInWinSecureDNS {
         # delete all other previous DoH settings for ALL Interface - Windows behavior in settings when changing DoH settings is to delete all DoH settings for the interface we are modifying
         # but we need to delete all DoH settings for ALL interfaces in here because every time we virtualize a network adapter with external switch of Hyper-V,
         # Hyper-V assigns a new GUID to it, so it's better not to leave any leftover in the registry and clean up after ourselves
-        Remove-Item 'HKLM:System\CurrentControlSet\Services\Dnscache\InterfaceSpecificParameters\*' -Recurse | Out-Null
+        Remove-Item -Path 'Registry::HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\Dnscache\InterfaceSpecificParameters\*' -Recurse | Out-Null
 
         $DoHIPs = (Get-DnsClientDohServerAddress | Where-Object { $_.DohTemplate -eq $DetectedDoHTemplate }).ServerAddress
 
@@ -62,7 +49,7 @@ Function Set-BuiltInWinSecureDNS {
             $IP = [ipaddress]$_
             if ($IP.AddressFamily -eq 'InterNetwork') {
                 # defining registry path for DoH settings of the $ActiveNetworkInterface based on its GUID for IPv4
-                $Path = "HKLM:System\CurrentControlSet\Services\Dnscache\InterfaceSpecificParameters\$($ActiveNetworkInterface.InterfaceGuid)\DohInterfaceSettings\Doh\$_"
+                $Path = "Registry::HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\Dnscache\InterfaceSpecificParameters\$($ActiveNetworkInterface.InterfaceGuid)\DohInterfaceSettings\Doh\$_"
 
                 # add DoH settings for the specified Network adapter based on its GUID in registry
                 # value 1 for DohFlags key means use automatic template for DoH, 2 means manual template, since we add our template to Windows, it's predefined so we use value 1
@@ -73,7 +60,7 @@ Function Set-BuiltInWinSecureDNS {
             }
             elseif ($IP.AddressFamily -eq 'InterNetworkV6') {
                 # defining registry path for DoH settings of the $ActiveNetworkInterface based on its GUID for IPv6
-                $Path = "HKLM:System\CurrentControlSet\Services\Dnscache\InterfaceSpecificParameters\$($ActiveNetworkInterface.InterfaceGuid)\DohInterfaceSettings\Doh6\$_"
+                $Path = "Registry::HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\Dnscache\InterfaceSpecificParameters\$($ActiveNetworkInterface.InterfaceGuid)\DohInterfaceSettings\Doh6\$_"
 
                 # add DoH settings for the specified Network adapter based on its GUID in registry
                 # value 1 for DohFlags key means use automatic template for DoH, 2 means manual template, since we already added our template to Windows, it's considered predefined, so we use value 1

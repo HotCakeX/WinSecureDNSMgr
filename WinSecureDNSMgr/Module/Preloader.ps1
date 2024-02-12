@@ -1,9 +1,6 @@
 if (!$IsWindows) {
-    Throw [System.PlatformNotSupportedException] 'The WDACConfig module only runs on Windows operation systems.'
+    Throw [System.PlatformNotSupportedException] 'The module only runs on Windows operation systems.'
 }
-
-# Specifies that the WDACConfig module requires Administrator privileges
-#Requires -RunAsAdministrator
 
 # Create tamper resistant global variables (if they don't already exist) - They are automatically imported in the caller's environment
 try {
@@ -12,3 +9,10 @@ try {
 catch {
     Throw [System.InvalidOperationException] 'Could not set the required global variables.'
 }
+
+# Get the JSON file containing the DoH reference
+[System.String]$BuiltInDoHTemplatesReferenceJSON = Get-Content -Path "$WinSecureDNSMgrModuleRootPath\Shared\BuiltInDoHTemplatesReference.json"
+
+# Convert the JSON content to hashtable and make it available to the entire module
+$BuiltInDoHTemplatesReference = ConvertFrom-Json -AsHashtable -InputObject $BuiltInDoHTemplatesReferenceJSON
+

@@ -5,7 +5,7 @@ function Set-DynamicIPDoHServer {
     # checking to make sure the DoH template is valid and not one of the built-in ones
     [ValidatePattern('^https\:\/\/.+\..+\/.*', ErrorMessage = 'The value provided for the parameter DoHTemplate is not a valid DNS over HTTPS template. Please enter a valid DNS over HTTPS template that starts with https, has a TLD and a slash after it. E.g.: https://template.com/')]
     [ValidateScript({ $_ -notmatch 'https://(cloudflare-dns|dns\.google|dns\.quad9)\.com/dns-query' }, ErrorMessage = 'The DoH template you selected is one of the Windows built-in ones. Please select a different DoH template or use the Set-BuiltInWinSecureDNS cmdlet.')]
-    [Parameter(Mandatory)][string]$DoHTemplate
+    [Parameter(Mandatory)][System.String]$DoHTemplate
   )
 
   begin {

@@ -7,7 +7,7 @@ function WriteTeaGreen { Write-Host -Object "$($PSStyle.Foreground.FromRgb(133, 
 
 function Select-Option {
     param(
-        [parameter(Mandatory = $true, Position = 0)][string]$Message,
+        [parameter(Mandatory = $true, Position = 0)][System.String]$Message,
         [parameter(Mandatory = $true, Position = 1)][string[]]$Options
     )
     $Selected = $null
@@ -81,6 +81,7 @@ Function Get-IPv4DoHServerIPAddressWinSecureDNSMgr {
 $NewIPsV6 = @()
 
 Function Get-IPv6DoHServerIPAddressWinSecureDNSMgr {
+    [CmdletBinding()]
     param ($domain)
 
     # get the new IPv6s for $domain
@@ -114,41 +115,5 @@ Function Get-IPv6DoHServerIPAddressWinSecureDNSMgr {
     else {
         Write-Host "`nFailed to get IPv6s for $domain" -ForegroundColor Red
         return $null
-    }
-}
-
-
-# Defining the Built-in DNS templates available in Windows
-$BuiltInDoHTemplatesReference = [ordered]@{
-    'CloudFlare' = [ordered]@{
-        'IPv4' = [ordered]@{
-            '1.1.1.1' = 'https://cloudflare-dns.com/dns-query'
-            '1.0.0.1' = 'https://cloudflare-dns.com/dns-query'
-        }
-        'IPv6' = [ordered]@{
-            '2606:4700:4700::1111' = 'https://cloudflare-dns.com/dns-query'
-            '2606:4700:4700::1001' = 'https://cloudflare-dns.com/dns-query'
-        }
-    }
-    'Quad9'      = [ordered]@{
-        'IPv4' = [ordered]@{
-            '9.9.9.9'         = 'https://dns.quad9.net/dns-query'
-            '149.112.112.112' = 'https://dns.quad9.net/dns-query'
-
-        }
-        'IPv6' = [ordered]@{
-            '2620:fe::9'  = 'https://dns.quad9.net/dns-query'
-            '2620:fe::fe' = 'https://dns.quad9.net/dns-query'
-        }
-    }
-    'Google'     = [ordered]@{
-        'IPv4' = [ordered]@{
-            '8.8.8.8' = 'https://dns.google/dns-query'
-            '8.8.4.4' = 'https://dns.google/dns-query'
-        }
-        'IPv6' = [ordered]@{
-            '2001:4860:4860::8888' = 'https://dns.google/dns-query'
-            '2001:4860:4860::8844' = 'https://dns.google/dns-query'
-        }
     }
 }
