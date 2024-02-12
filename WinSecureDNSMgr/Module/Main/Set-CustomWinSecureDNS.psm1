@@ -94,7 +94,7 @@ function Set-CustomWinSecureDNS {
         }
 
         # reset the network adapter's DNS servers back to default to take care of any IPv6 strays
-        Set-DnsClientServerAddress -InterfaceIndex $ActiveNetworkInterface.ifIndex -ResetServerAddresses -ErrorAction Stop
+        Set-DnsClientServerAddress -InterfaceIndex $ActiveNetworkInterface.ifIndex -ResetServerAddresses
 
         # delete all other previous DoH settings for ALL Interface - Windows behavior in settings when changing DoH settings is to delete all DoH settings for the interface we are modifying
         # but we need to delete all DoH settings for ALL interfaces in here because every time we virtualize a network adapter with external switch of Hyper-V,
@@ -133,7 +133,7 @@ function Set-CustomWinSecureDNS {
         $NewIPs = $IPV4s + $IPV6s
 
         # this is responsible for making the changes in Windows settings UI > Network and internet > $ActiveNetworkInterface.Name
-        Set-DnsClientServerAddress -ServerAddresses $NewIPs -InterfaceIndex $ActiveNetworkInterface.ifIndex -ErrorAction Stop
+        Set-DnsClientServerAddress -ServerAddresses $NewIPs -InterfaceIndex $ActiveNetworkInterface.ifIndex
 
     }
 
