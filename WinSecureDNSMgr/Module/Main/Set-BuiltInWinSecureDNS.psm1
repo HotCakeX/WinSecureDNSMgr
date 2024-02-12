@@ -1,8 +1,9 @@
 Function Set-BuiltInWinSecureDNS {
     [Alias('Set-DOH')]
     [CmdletBinding()]
+    [OutputType([System.String], [Microsoft.Management.Infrastructure.CimInstance])]
     param (
-        [ValidateScript({ $_ -in $BuiltInDoHTemplatesReference.Keys }, ErrorMessage = 'The selected DNS over HTTPS provider is not supported by Windows. Please select a different provider or use the Set-CustomWinSecureDNS cmdlet.')]
+        [ValidateSet('Cloudflare', 'Google', 'Quad9', ErrorMessage = 'The selected DNS over HTTPS provider is not supported by Windows. Please select a different provider or use the Set-CustomWinSecureDNS cmdlet.')]
         [Parameter(Mandatory = $True)][System.String]$DoHProvider
     )
     begin {
@@ -122,5 +123,10 @@ Function Set-BuiltInWinSecureDNS {
     Set-DOH -DoHProvider Cloudflare
 .PARAMETER Verbose
     Switch to enable verbose output
+.INPUTS
+    System.String
+.OUTPUTS
+    System.String
+    Microsoft.Management.Infrastructure.CimInstance
 #>
 }

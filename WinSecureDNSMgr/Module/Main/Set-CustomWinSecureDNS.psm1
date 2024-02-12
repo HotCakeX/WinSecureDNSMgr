@@ -1,6 +1,7 @@
 function Set-CustomWinSecureDNS {
     [Alias('Set-CDOH')]
     [CmdletBinding()]
+    [OutputType([System.String], [Microsoft.Management.Infrastructure.CimInstance])]
     param (
         # checking to make sure the DoH template is valid and not one of the built-in ones
         [ValidatePattern('^https\:\/\/.+\..+\/.*', ErrorMessage = 'The value provided for the parameter DoHTemplate is not a valid DNS over HTTPS template. Please enter a valid DNS over HTTPS template that starts with https, has a TLD and a slash after it. E.g.: https://template.com/')]
@@ -204,5 +205,11 @@ function Set-CustomWinSecureDNS {
 .EXAMPLE
     Set-CustomWinSecureDNS -DoHTemplate https://example.com/
     Set-CDOH -DoHTemplate https://example.com -IPV4s 1.2.3.4 -IPV6s 2001:db8::8a2e:370:7334
+.INPUTS
+    System.String
+    System.Net.IPAddress[]
+.OUTPUTS
+    Microsoft.Management.Infrastructure.CimInstance
+    System.String
 #>
 }

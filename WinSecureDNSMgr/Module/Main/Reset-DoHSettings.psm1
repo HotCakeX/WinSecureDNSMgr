@@ -1,5 +1,6 @@
 Function Reset-DoHSettings {
     [CmdletBinding()]
+    [OutputType([System.Void])]
     param()
 
     Write-Verbose -Message 'Displaying non-system DoH templates.'

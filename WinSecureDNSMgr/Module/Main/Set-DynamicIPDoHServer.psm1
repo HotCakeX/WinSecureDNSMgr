@@ -1,6 +1,7 @@
 function Set-DynamicIPDoHServer {
   [Alias('Set-DDOH')]
   [CmdletBinding()]
+  [OutputType([System.String])]
   param (
     # checking to make sure the DoH template is valid and not one of the built-in ones
     [ValidatePattern('^https\:\/\/.+\..+\/.*', ErrorMessage = 'The value provided for the parameter DoHTemplate is not a valid DNS over HTTPS template. Please enter a valid DNS over HTTPS template that starts with https, has a TLD and a slash after it. E.g.: https://template.com/')]
@@ -14,7 +15,7 @@ function Set-DynamicIPDoHServer {
     [System.String]$DomainExtractionRegex = '(?<=https\:\/\/).+?(?=\/)'
 
     # Test if the input matches the regex
-    $DoHTemplate -match $DomainExtractionRegex
+    $DoHTemplate -match $DomainExtractionRegex | Out-Null
     # Access the matched value
     [System.String]$Domain = $Matches[0]
 
@@ -144,5 +145,9 @@ function Set-DynamicIPDoHServer {
 .EXAMPLE
   Set-DDOH -DoHTemplate https://example.com/
   Set-DynamicIPDoHServer -DoHTemplate https://example.com/
+.INPUTS
+  System.String
+.OUTPUTS
+  System.String
 #>
 }
