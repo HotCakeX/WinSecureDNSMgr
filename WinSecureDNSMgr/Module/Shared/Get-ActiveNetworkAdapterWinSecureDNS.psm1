@@ -65,3 +65,4 @@ function Get-ActiveNetworkAdapterWinSecureDNS {
         Throw $_
     }
 }
+Export-ModuleMember -Function 'Get-ActiveNetworkAdapterWinSecureDNS'

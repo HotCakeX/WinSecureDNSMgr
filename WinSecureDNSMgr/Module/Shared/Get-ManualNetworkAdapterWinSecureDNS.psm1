@@ -13,6 +13,9 @@ function Get-ManualNetworkAdapterWinSecureDNS {
     Returns the selected network adapter as a CimInstance
 #>
 
+    # Import the required modules
+    Import-Module -Name "$WinSecureDNSMgrModuleRootPath\Shared\ColorFunctions.psm1" -Force
+
     # Get the network adapters and their properties if their status is neither disabled, disconnected nor null
     [System.Object[]]$Adapters = Get-NetAdapter | Where-Object -FilterScript {
         ($_.Status -ne 'Disabled') -and ($null -ne $_.Status) -and ($_.Status -ne 'Disconnected')
@@ -119,3 +122,4 @@ function Get-ManualNetworkAdapterWinSecureDNS {
         return [Microsoft.Management.Infrastructure.CimInstance]$ActiveNetworkInterface
     }
 }
+Export-ModuleMember -Function 'Get-ManualNetworkAdapterWinSecureDNS'

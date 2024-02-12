@@ -13,6 +13,13 @@ function Set-CustomWinSecureDNS {
     )
     begin {
 
+        # Import sub-modules
+        Import-Module -Name "$WinSecureDNSMgrModuleRootPath\Shared\Get-ActiveNetworkAdapterWinSecureDNS.psm1" -Force
+        Import-Module -Name "$WinSecureDNSMgrModuleRootPath\Shared\Get-ManualNetworkAdapterWinSecureDNS.psm1" -Force
+        Import-Module -Name "$WinSecureDNSMgrModuleRootPath\Shared\Select-Option.psm1" -Force
+        Import-Module -Name "$WinSecureDNSMgrModuleRootPath\Shared\Get-IPv6DoHServerIPAddressWinSecureDNSMgr.psm1" -Force
+        Import-Module -Name "$WinSecureDNSMgrModuleRootPath\Shared\Get-IPv4DoHServerIPAddressWinSecureDNSMgr.psm1" -Force
+
         [System.Boolean]$AutoDetectDoHIPs = $false
 
         # If IP addresses were provided manually by user, verify their version

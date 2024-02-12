@@ -128,8 +128,12 @@ https://github.com/HotCakeX/WinSecureDNSMgr
         'Preloader.ps1',
         'Shared\Get-ActiveNetworkAdapterWinSecureDNS.psm1',
         'Shared\Get-ManualNetworkAdapterWinSecureDNS.psm1',
-        'Shared\CommonResources.psm1',
         'Shared\BuiltInDoHTemplatesReference.json'
+        'Shared\ColorFunctions.psm1'
+        'Shared\Get-IPv4DoHServerIPAddressWinSecureDNSMgr.psm1'
+        'Shared\Get-IPv6DoHServerIPAddressWinSecureDNSMgr.psm1'
+        'Shared\Invoke-cURL.psm1'
+        'Shared\Select-Option.psm1'
         'Main\Set-BuiltInWinSecureDNS.psm1',
         'Main\Set-CustomWinSecureDNS.psm1',
         'Main\Set-DynamicIPDoHServer.psm1',

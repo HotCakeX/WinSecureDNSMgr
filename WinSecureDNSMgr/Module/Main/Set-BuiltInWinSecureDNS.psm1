@@ -8,6 +8,11 @@ Function Set-BuiltInWinSecureDNS {
     )
     begin {
 
+        # Import sub-modules
+        Import-Module -Name "$WinSecureDNSMgrModuleRootPath\Shared\Get-ActiveNetworkAdapterWinSecureDNS.psm1" -Force
+        Import-Module -Name "$WinSecureDNSMgrModuleRootPath\Shared\Get-ManualNetworkAdapterWinSecureDNS.psm1" -Force
+        Import-Module -Name "$WinSecureDNSMgrModuleRootPath\Shared\Select-Option.psm1" -Force
+
         # Get the DoH domain from the hashtable - Since all of the DoH domains are identical for the same provider, only getting the first item in the array
         [System.String]$DetectedDoHTemplate = ($BuiltInDoHTemplatesReference.GetEnumerator() | Where-Object { $_.Key -eq $DoHProvider }).Value.Values.Values[0]
 
