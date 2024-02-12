@@ -12,5 +12,5 @@ $PSDefaultParameterValues = @{
     'Get-IPv4DoHServerIPAddressWinSecureDNSMgr:Verbose' = $Verbose
     'Get-IPv6DoHServerIPAddressWinSecureDNSMgr:Verbose' = $Verbose
     'Select-Option:Verbose'                             = $Verbose
-    'Invoke-cURL:Verbose'                               = $Verbose
+    'Get-DoHIPs:Verbose'                               = $Verbose
 }

@@ -132,7 +132,7 @@ https://github.com/HotCakeX/WinSecureDNSMgr
         'Shared\ColorFunctions.psm1'
         'Shared\Get-IPv4DoHServerIPAddressWinSecureDNSMgr.psm1'
         'Shared\Get-IPv6DoHServerIPAddressWinSecureDNSMgr.psm1'
-        'Shared\Invoke-cURL.psm1'
+        'Shared\Get-DoHIPs.psm1'
         'Shared\Select-Option.psm1'
         'Main\Set-BuiltInWinSecureDNS.psm1',
         'Main\Set-CustomWinSecureDNS.psm1',

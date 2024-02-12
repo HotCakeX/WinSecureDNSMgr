@@ -9,7 +9,7 @@ Function Get-IPv6DoHServerIPAddressWinSecureDNSMgr {
         # Importing the $PSDefaultParameterValues to the current session, prior to everything else
         . "$WinSecureDNSMgrModuleRootPath\MainExt\PSDefaultParameterValues.ps1"
 
-        Import-Module -Name "$WinSecureDNSMgrModuleRootPath\Shared\Invoke-cURL.psm1" -Force
+        Import-Module -Name "$WinSecureDNSMgrModuleRootPath\Shared\Get-DoHIPs.psm1" -Force
 
         # An array to store IP addresses
         $NewIPsV6 = @()
@@ -19,19 +19,19 @@ Function Get-IPv6DoHServerIPAddressWinSecureDNSMgr {
         # get the new IPv6s for $Domain
         Write-Host -Object "Using the main Cloudflare Encrypted API to resolve $Domain" -ForegroundColor Green
 
-        $NewIPsV6 = Invoke-cURL -Url "https://1.1.1.1/dns-query?name=$Domain&type=AAAA"
+        $NewIPsV6 = Get-DoHIPs -Url "https://1.1.1.1/dns-query?name=$Domain&type=AAAA"
 
         if (!$NewIPsV6) {
             Write-Host -Object "First try failed, now using the secondary Encrypted Cloudflare API to to get IPv6s for $Domain" -ForegroundColor Blue
-            $NewIPsV6 = Invoke-cURL -Url "https://1.0.0.1/dns-query?name=$Domain&type=AAAA"
+            $NewIPsV6 = Get-DoHIPs -Url "https://1.0.0.1/dns-query?name=$Domain&type=AAAA"
         }
         if (!$NewIPsV6) {
             Write-Host -Object "Second try failed, now using the main Encrypted Google API to to get IPv6s for $Domain" -ForegroundColor Yellow
-            $NewIPsV6 = Invoke-cURL -Url "https://8.8.8.8/resolve?name=$Domain&type=AAAA"
+            $NewIPsV6 = Get-DoHIPs -Url "https://8.8.8.8/resolve?name=$Domain&type=AAAA"
         }
         if (!$NewIPsV6) {
             Write-Host -Object "Third try failed, now using the second Encrypted Google API to to get IPv6s for $Domain" -ForegroundColor DarkRed
-            $NewIPsV6 = Invoke-cURL -Url "https://8.8.4.4/resolve?name=$Domain&type=AAAA"
+            $NewIPsV6 = Get-DoHIPs -Url "https://8.8.4.4/resolve?name=$Domain&type=AAAA"
         }
         if (!$NewIPsV6) {
             Write-Host -Object "Fourth try failed, using any available system DNS to get the IPv6s for $Domain" -ForegroundColor Magenta
