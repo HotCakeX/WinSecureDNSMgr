@@ -20,60 +20,18 @@ Quick, proper and automatic way to configure Secure DNS in Windows with multiple
 <details>
   <summary>Table of Contents</summary>
 
-1. <a href="#operation-modes">Operation modes</a>
-2. <a href="#about-the-module">About The Module</a>
-3. <a href="#features">Features</a>
-4. <a href="##recommended-setup">Recommended setup</a>
-5. <a href="#prerequisites">Prerequisites</a>
-6. <a href="#installation">Installation</a>
-7. <a href="#usage">Usage</a>
+1. <a href="#about-the-module">About The Module</a>
+2. <a href="#features">Features</a>
+3. <a href="#recommended-setup">Recommended setup</a>
+4. <a href="#prerequisites">Prerequisites</a>
+5. <a href="#installation">Installation</a>
+6. <a href="#usage">Usage</a>
    - <a href="#built-in-doh-examples">Built-in DoH examples</a>
    - <a href="#custom-doh-examples">Custom DoH examples</a>
    - <a href="#dynamic-doh-examples">Dynamic DoH examples</a>
+7. <a href="#operation-modes">Operation modes</a>
 
 </details>
-
-<br>
-
-<img src="https://github.com/HotCakeX/Harden-Windows-Security/raw/main/images/Gifs/1pxRainbowLine.gif" width= "300000" alt="horizontal super thin rainbow RGB line">
-
-<br>
-
-## Operation modes
-
-### <img src="https://raw.githubusercontent.com/HotCakeX/Harden-Windows-Security/main/images/WebP/PinkDash.webp" width="30">  DNS over HTTPS in Windows using the default built-in OS DoH providers
-
-* This is the default mode of operation for this module. It will set up DNS over HTTPS in Windows using the default built-in OS DoH providers, which are Cloudflare, Quad9 and Google.
-
-* In this mode of operation, the active network adapter/interface will be detected automatically but you will have the option to review it and choose a different one if you like.
-
-### <img src="https://raw.githubusercontent.com/HotCakeX/Harden-Windows-Security/main/images/WebP/PinkDash.webp" width="30">  DNS over HTTPS in Windows using a custom DoH provider that has **static** IP address(s)
-
-* This mode of operation is useful when you want to use a custom DoH provider that has static IP address(s). You can supply the module with a DoH template and then you have 2 options
-
-  * Let the module automatically detect the IP address(s) of the DoH server and set them in Windows
-  * Supply the module with the IP address(s) of the DoH server and let it set them in Windows
-
-* In this mode of operation, the active network adapter/interface will be detected automatically but you will have the option to review it and choose a different one if you like.
-
-### <img src="https://raw.githubusercontent.com/HotCakeX/Harden-Windows-Security/main/images/WebP/PinkDash.webp" width="30">  DNS over HTTPS in Windows using a custom DoH provider that has **dynamic** IP address(s)
-
-* This mode of operation is useful when you want to use a custom DoH provider that has dynamic IP address(s).
-
-* Once you run the module in this mode for the first time and supply it with your DoH template, it will create a scheduled task that will run the module automatically based on 2 distinct criteria:
-
-  - As soon as Windows detects the current DNS servers are unreachable
-  - Every 6 hours in order to check for new IP changes for the dynamic DoH server
-
-    - You can fine-tune the interval in Task Scheduler GUI if you like. I haven't had any downtimes in my tests because the module runs milliseconds after Windows detects DNS servers are unreachable, and even then, Windows still maintains the current active connections using the DNS cache. if your experience is different, please let me know [on GitHub](https://github.com/HotCakeX/WinSecureDNSMgr/issues).
-
-* The module and the scheduled task will use both IPv4s and IPv6s of the dynamic DoH server. The task will run whether or not any user is logged on.
-
-* In this mode of operation, the active network adapter/interface will be detected automatically.
-
-<br>
-
-<p align="right"><a href="#readme-top">💡(back to top)</a></p>
 
 <br>
 
@@ -122,7 +80,7 @@ That means it will detect the correct network adapter/interface even if you are 
 
 <img src="https://raw.githubusercontent.com/HotCakeX/Harden-Windows-Security/main/images/WebP/911587042608156732.webp" width="20"> if 4th one fails, tries using any system DNS that is available to get the IP address(s) of the DoH server's domain.
 
-<img src="https://raw.githubusercontent.com/HotCakeX/Harden-Windows-Security/main/images/WebP/911587042608156732.webp" width="30"> All of the connections to Cloudflare and Google servers use direct IP, are set to use [TLS 1.3](https://curl.se/docs/manpage.html#--tls13-ciphers) with [TLS_CHACHA20_POLY1305_SHA256](https://curl.se/docs/ssl-ciphers.html) cipher suite and use `HTTP/2`, with the exception of the last try which uses system DNS.
+<img src="https://raw.githubusercontent.com/HotCakeX/Harden-Windows-Security/main/images/WebP/911587042608156732.webp" width="30"> All of the connections to Cloudflare and Google servers use direct IP, are set to use [TLS 1.3](https://curl.se/docs/manpage.html#--tls13-ciphers) with `HTTP/3`, with the exception of the last try which uses system DNS as the last resort before giving up.
 
 <br>
 
@@ -246,6 +204,48 @@ Set-DDOH -DoHTemplate https://example.com/
 <br>
 
 <p align="right"><a href="#readme-top">💡(back to top)</a></p>
+
+<br>
+
+## Operation modes
+
+### <img src="https://raw.githubusercontent.com/HotCakeX/Harden-Windows-Security/main/images/WebP/PinkDash.webp" width="30">  DNS over HTTPS in Windows using the default built-in OS DoH providers
+
+* This is the default mode of operation for this module. It will set up DNS over HTTPS in Windows using the default built-in OS DoH providers, which are Cloudflare, Quad9 and Google.
+
+* In this mode of operation, the active network adapter/interface will be detected automatically but you will have the option to review it and choose a different one if you like.
+
+### <img src="https://raw.githubusercontent.com/HotCakeX/Harden-Windows-Security/main/images/WebP/PinkDash.webp" width="30">  DNS over HTTPS in Windows using a custom DoH provider that has **static** IP address(s)
+
+* This mode of operation is useful when you want to use a custom DoH provider that has static IP address(s). You can supply the module with a DoH template and then you have 2 options
+
+  * Let the module automatically detect the IP address(s) of the DoH server and set them in Windows
+  * Supply the module with the IP address(s) of the DoH server and let it set them in Windows
+
+* In this mode of operation, the active network adapter/interface will be detected automatically but you will have the option to review it and choose a different one if you like.
+
+### <img src="https://raw.githubusercontent.com/HotCakeX/Harden-Windows-Security/main/images/WebP/PinkDash.webp" width="30">  DNS over HTTPS in Windows using a custom DoH provider that has **dynamic** IP address(s)
+
+* This mode of operation is useful when you want to use a custom DoH provider that has dynamic IP address(s).
+
+* Once you run the module in this mode for the first time and supply it with your DoH template, it will create a scheduled task that will run the module automatically based on 2 distinct criteria:
+
+  - As soon as Windows detects the current DNS servers are unreachable
+  - Every 6 hours in order to check for new IP changes for the dynamic DoH server
+
+    - You can fine-tune the interval in Task Scheduler GUI if you like. I haven't had any downtimes in my tests because the module runs milliseconds after Windows detects DNS servers are unreachable, and even then, Windows still maintains the current active connections using the DNS cache. if your experience is different, please let me know [on GitHub](https://github.com/HotCakeX/WinSecureDNSMgr/issues).
+
+* The module and the scheduled task will use both IPv4s and IPv6s of the dynamic DoH server. The task will run whether or not any user is logged on.
+
+* In this mode of operation, the active network adapter/interface will be detected automatically.
+
+<br>
+
+<p align="right"><a href="#readme-top">💡(back to top)</a></p>
+
+<br>
+
+<img src="https://github.com/HotCakeX/Harden-Windows-Security/raw/main/images/Gifs/1pxRainbowLine.gif" width= "300000" alt="horizontal super thin rainbow RGB line">
 
 <br>
 
