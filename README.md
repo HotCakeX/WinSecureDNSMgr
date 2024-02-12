@@ -17,7 +17,7 @@ Quick, proper and automatic way to configure Secure DNS in Windows with multiple
 
 </div>
 
-<details>
+<details open>
   <summary>Table of Contents</summary>
 
 1. <a href="#about-the-module">About The Module</a>
