@@ -7,8 +7,8 @@ function WriteTeaGreen { Write-Host -Object "$($PSStyle.Foreground.FromRgb(133, 
 
 function Select-Option {
     param(
-        [parameter(Mandatory = $true, Position = 0)][System.String]$Message,
-        [parameter(Mandatory = $true, Position = 1)][string[]]$Options
+        [parameter(Mandatory = $True, Position = 0)][System.String]$Message,
+        [parameter(Mandatory = $True, Position = 1)][System.String[]]$Options
     )
     $Selected = $null
     while ($null -eq $Selected) {
@@ -42,27 +42,27 @@ Function Invoke-cURL {
 $NewIPsV4 = @()
 
 Function Get-IPv4DoHServerIPAddressWinSecureDNSMgr {
-    param ($domain)
+    param ($Domain)
 
-    # get the new IPv4s for $domain
-    Write-Host -Object "Using the main Cloudflare Encrypted API to resolve $domain" -ForegroundColor Green
-    $NewIPsV4 = Invoke-cURL "https://1.1.1.1/dns-query?name=$domain&type=A"
+    # get the new IPv4s for $Domain
+    Write-Host -Object "Using the main Cloudflare Encrypted API to resolve $Domain" -ForegroundColor Green
+    $NewIPsV4 = Invoke-cURL "https://1.1.1.1/dns-query?name=$Domain&type=A"
 
     if (!$NewIPsV4) {
-        Write-Host "First try failed, now using the secondary Encrypted Cloudflare API to to get IPv4s for $domain" -ForegroundColor Blue
-        $NewIPsV4 = Invoke-cURL "https://1.0.0.1/dns-query?name=$domain&type=A"
+        Write-Host "First try failed, now using the secondary Encrypted Cloudflare API to to get IPv4s for $Domain" -ForegroundColor Blue
+        $NewIPsV4 = Invoke-cURL "https://1.0.0.1/dns-query?name=$Domain&type=A"
     }
     if (!$NewIPsV4) {
-        Write-Host "Second try failed, now using the main Encrypted Google API to to get IPv4s for $domain" -ForegroundColor Yellow
-        $NewIPsV4 = Invoke-cURL "https://8.8.8.8/resolve?name=$domain&type=A"
+        Write-Host "Second try failed, now using the main Encrypted Google API to to get IPv4s for $Domain" -ForegroundColor Yellow
+        $NewIPsV4 = Invoke-cURL "https://8.8.8.8/resolve?name=$Domain&type=A"
     }
     if (!$NewIPsV4) {
-        Write-Host "Third try failed, now using the second Encrypted Google API to to get IPv4s for $domain" -ForegroundColor DarkRed
-        $NewIPsV4 = Invoke-cURL "https://8.8.4.4/resolve?name=$domain&type=A"
+        Write-Host "Third try failed, now using the second Encrypted Google API to to get IPv4s for $Domain" -ForegroundColor DarkRed
+        $NewIPsV4 = Invoke-cURL "https://8.8.4.4/resolve?name=$Domain&type=A"
     }
     if (!$NewIPsV4) {
-        Write-Host "Fourth try failed, using any available system DNS to get the IPv4s for $domain" -ForegroundColor Magenta
-        $NewIPsV4 = (Resolve-DnsName -Type A -Name "$domain" -NoHostsFile).ipaddress
+        Write-Host "Fourth try failed, using any available system DNS to get the IPv4s for $Domain" -ForegroundColor Magenta
+        $NewIPsV4 = (Resolve-DnsName -Type A -Name "$Domain" -NoHostsFile).ipaddress
     }
 
     if ($NewIPsV4) {
@@ -72,7 +72,7 @@ Function Get-IPv4DoHServerIPAddressWinSecureDNSMgr {
         return $NewIPsV4
     }
     else {
-        Write-Host "`nFailed to get IPv4s for $domain" -ForegroundColor Red
+        Write-Host "Failed to get IPv4s for $Domain" -ForegroundColor Red
         return $null
     }
 }
@@ -82,27 +82,27 @@ $NewIPsV6 = @()
 
 Function Get-IPv6DoHServerIPAddressWinSecureDNSMgr {
     [CmdletBinding()]
-    param ($domain)
+    param ($Domain)
 
-    # get the new IPv6s for $domain
-    Write-Host "Using the main Cloudflare Encrypted API to resolve $domain" -ForegroundColor Green
-    $NewIPsV6 = Invoke-cURL "https://1.1.1.1/dns-query?name=$domain&type=AAAA"
+    # get the new IPv6s for $Domain
+    Write-Host "Using the main Cloudflare Encrypted API to resolve $Domain" -ForegroundColor Green
+    $NewIPsV6 = Invoke-cURL "https://1.1.1.1/dns-query?name=$Domain&type=AAAA"
 
     if (!$NewIPsV6) {
-        Write-Host "First try failed, now using the secondary Encrypted Cloudflare API to to get IPv6s for $domain" -ForegroundColor Blue
-        $NewIPsV6 = Invoke-cURL "https://1.0.0.1/dns-query?name=$domain&type=AAAA"
+        Write-Host "First try failed, now using the secondary Encrypted Cloudflare API to to get IPv6s for $Domain" -ForegroundColor Blue
+        $NewIPsV6 = Invoke-cURL "https://1.0.0.1/dns-query?name=$Domain&type=AAAA"
     }
     if (!$NewIPsV6) {
-        Write-Host "Second try failed, now using the main Encrypted Google API to to get IPv6s for $domain" -ForegroundColor Yellow
-        $NewIPsV6 = Invoke-cURL "https://8.8.8.8/resolve?name=$domain&type=AAAA"
+        Write-Host "Second try failed, now using the main Encrypted Google API to to get IPv6s for $Domain" -ForegroundColor Yellow
+        $NewIPsV6 = Invoke-cURL "https://8.8.8.8/resolve?name=$Domain&type=AAAA"
     }
     if (!$NewIPsV6) {
-        Write-Host "Third try failed, now using the second Encrypted Google API to to get IPv6s for $domain" -ForegroundColor DarkRed
-        $NewIPsV6 = Invoke-cURL "https://8.8.4.4/resolve?name=$domain&type=AAAA"
+        Write-Host "Third try failed, now using the second Encrypted Google API to to get IPv6s for $Domain" -ForegroundColor DarkRed
+        $NewIPsV6 = Invoke-cURL "https://8.8.4.4/resolve?name=$Domain&type=AAAA"
     }
     if (!$NewIPsV6) {
-        Write-Host "Fourth try failed, using any available system DNS to get the IPv6s for $domain" -ForegroundColor Magenta
-        $NewIPsV6 = (Resolve-DnsName -Type AAAA -Name "$domain" -NoHostsFile).ipaddress
+        Write-Host "Fourth try failed, using any available system DNS to get the IPv6s for $Domain" -ForegroundColor Magenta
+        $NewIPsV6 = (Resolve-DnsName -Type AAAA -Name "$Domain" -NoHostsFile).ipaddress
     }
 
     if ($NewIPsV6) {
@@ -113,7 +113,7 @@ Function Get-IPv6DoHServerIPAddressWinSecureDNSMgr {
         return $NewIPsV6
     }
     else {
-        Write-Host "`nFailed to get IPv6s for $domain" -ForegroundColor Red
+        Write-Host "Failed to get IPv6s for $Domain" -ForegroundColor Red
         return $null
     }
 }

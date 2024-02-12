@@ -22,9 +22,9 @@ Function Set-BuiltInWinSecureDNS {
             'No - Select Manually' {
                 $ActiveNetworkInterface = Get-ManualNetworkAdapterWinSecureDNS
             }
-            'Cancel' { 
+            'Cancel' {
                 $ShouldExit = $True
-                return 
+                return
             }
         }
 
@@ -35,7 +35,7 @@ Function Set-BuiltInWinSecureDNS {
     process {
         # if the user selected Cancel, do not proceed with the process block
         if ($ShouldExit) { break }
-        Wait-Debugger
+
         # reset the network adapter's DNS servers back to default to take care of any IPv6 strays
         Set-DnsClientServerAddress -InterfaceIndex $ActiveNetworkInterface.ifIndex -ResetServerAddresses
 
@@ -48,30 +48,31 @@ Function Set-BuiltInWinSecureDNS {
 
         $DoHIPs | ForEach-Object -Process {
 
-            # Use the IP address type
+            # Use the IPAddress type so we can get AddressFamily property
             $IP = [System.Net.IPAddress]$_
 
             if ($IP.AddressFamily -eq 'InterNetwork') {
-                
+
                 # defining registry path for DoH settings of the $ActiveNetworkInterface based on its GUID for IPv4
-                [System.String]$Path = "Registry::HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\Dnscache\InterfaceSpecificParameters\$($ActiveNetworkInterface.InterfaceGuid)\DohInterfaceSettings\Doh\$_"
+                [System.String]$PathV4 = "Registry::HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\Dnscache\InterfaceSpecificParameters\$($ActiveNetworkInterface.InterfaceGuid)\DohInterfaceSettings\Doh\$_"
 
                 # add DoH settings for the specified Network adapter based on its GUID in registry
                 # value 1 for DohFlags key means use automatic template for DoH, 2 means manual template, since we add our template to Windows, it's predefined so we use value 1
-                New-Item -Path $Path -Force | Out-Null
-                New-ItemProperty -Path $Path -Name 'DohFlags' -Value 1 -PropertyType 'Qword' -Force
+                New-Item -Path $PathV4 -Force | Out-Null
+                New-ItemProperty -Path $PathV4 -Name 'DohFlags' -Value 1 -PropertyType 'Qword' -Force
 
                 Set-DnsClientDohServerAddress -ServerAddress $_ -DohTemplate $DetectedDoHTemplate -AllowFallbackToUdp $False -AutoUpgrade $True
             }
+
             elseif ($IP.AddressFamily -eq 'InterNetworkV6') {
 
                 # defining registry path for DoH settings of the $ActiveNetworkInterface based on its GUID for IPv6
-                [System.String]$Path = "Registry::HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\Dnscache\InterfaceSpecificParameters\$($ActiveNetworkInterface.InterfaceGuid)\DohInterfaceSettings\Doh6\$_"
+                [System.String]$PathV6 = "Registry::HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\Dnscache\InterfaceSpecificParameters\$($ActiveNetworkInterface.InterfaceGuid)\DohInterfaceSettings\Doh6\$_"
 
                 # add DoH settings for the specified Network adapter based on its GUID in registry
                 # value 1 for DohFlags key means use automatic template for DoH, 2 means manual template, since we already added our template to Windows, it's considered predefined, so we use value 1
-                New-Item -Path $Path -Force | Out-Null
-                New-ItemProperty -Path $Path -Name 'DohFlags' -Value 1 -PropertyType Qword -Force
+                New-Item -Path $PathV6 -Force | Out-Null
+                New-ItemProperty -Path $PathV6 -Name 'DohFlags' -Value 1 -PropertyType 'Qword' -Force
 
                 Set-DnsClientDohServerAddress -ServerAddress $_ -DohTemplate $DetectedDoHTemplate -AllowFallbackToUdp $False -AutoUpgrade $True
             }
@@ -88,7 +89,7 @@ Function Set-BuiltInWinSecureDNS {
         # clear DNS client Cache
         Clear-DnsClientCache
 
-        Write-Host -Object "`nDNS over HTTPS (DoH) is now configured for $($ActiveNetworkInterface.Name) using $DoHProvider provider.`n" -ForegroundColor Green
+        Write-Host -Object "DNS over HTTPS (DoH) is now configured for $($ActiveNetworkInterface.Name) using $DoHProvider provider." -ForegroundColor Green
 
         # Define the name and path of the task
         [System.String]$TaskName = 'Dynamic DoH Server IP check'

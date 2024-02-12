@@ -26,7 +26,7 @@ Function Reset-DoHSettings {
 
             # Loop over each IPv4 address and its DoH domain
             foreach ($IPv4 in $IPv4s.Value.GetEnumerator()) {
-                Add-DnsClientDohServerAddress -AllowFallbackToUdp $false -AutoUpgrade $true -ServerAddress $IPv4.Name -DohTemplate $IPv4.Value | Out-Null
+                Add-DnsClientDohServerAddress -AllowFallbackToUdp $false -AutoUpgrade $True -ServerAddress $IPv4.Name -DohTemplate $IPv4.Value | Out-Null
             }
         }
 
@@ -35,7 +35,7 @@ Function Reset-DoHSettings {
 
             # Loop over each IPv6 address and its DoH domain
             foreach ($IPv6 in $IPv6s.Value.GetEnumerator()) {
-                Add-DnsClientDohServerAddress -AllowFallbackToUdp $false -AutoUpgrade $true -ServerAddress $IPv6.Name -DohTemplate $IPv6.Value | Out-Null
+                Add-DnsClientDohServerAddress -AllowFallbackToUdp $false -AutoUpgrade $True -ServerAddress $IPv6.Name -DohTemplate $IPv6.Value | Out-Null
             }
         }
     }

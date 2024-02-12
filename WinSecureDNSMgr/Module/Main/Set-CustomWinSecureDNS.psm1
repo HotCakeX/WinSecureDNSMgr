@@ -1,6 +1,6 @@
 function Set-CustomWinSecureDNS {
     [Alias('Set-CDOH')]
-    [CmdletBinding(SupportsShouldProcess = $true)]
+    [CmdletBinding(SupportsShouldProcess = $True)]
     param (
         # checking to make sure the DoH template is valid and not one of the built-in ones
         [ValidatePattern('^https\:\/\/.+\..+\/.*', ErrorMessage = 'The value provided for the parameter DoHTemplate is not a valid DNS over HTTPS template. Please enter a valid DNS over HTTPS template that starts with https, has a TLD and a slash after it. E.g.: https://template.com/')]
@@ -25,9 +25,9 @@ function Set-CustomWinSecureDNS {
             $IPV6s | ForEach-Object { if ($_.AddressFamily -ne 'InterNetworkV6') { throw "The IP address $_ is not a valid IPv6 address." } }
         }
 
-        # if no IP addresses were provided manually by user, set the $AutoDetectDoHIPs variable to $true
+        # if no IP addresses were provided manually by user, set the $AutoDetectDoHIPs variable to $True
         if (!$IPV4s -and !$IPV6s) {
-            $AutoDetectDoHIPs = $true
+            $AutoDetectDoHIPs = $True
         }
 
         # Detect the active network adapter automatically
@@ -42,11 +42,11 @@ function Set-CustomWinSecureDNS {
                 # Detect the active network adapter manually
                 $ActiveNetworkInterface = Get-ManualNetworkAdapterWinSecureDNS
             } # properly exiting this advanced function is a bit tricky, so we use a variable to control the loop
-            'Cancel' { $ShouldExit = $true; return }
+            'Cancel' { $ShouldExit = $True; return }
         }
 
-        # if user chose to cancel the Get-ManualNetworkAdapterWinSecureDNS function, set the $shouldExit variable to $true and exit the function in the Process block
-        if (!$ActiveNetworkInterface) { $ShouldExit = $true; return }
+        # if user chose to cancel the Get-ManualNetworkAdapterWinSecureDNS function, set the $shouldExit variable to $True and exit the function in the Process block
+        if (!$ActiveNetworkInterface) { $ShouldExit = $True; return }
 
         # Detect the IP address(s) of the DoH domain automatically if not provided by the user
         if ($AutoDetectDoHIPs) {
@@ -57,17 +57,18 @@ function Set-CustomWinSecureDNS {
             # Test if the input matches the regex
             $DoHTemplate -match $DomainExtractionRegex
             # Access the matched value
-            $domain = $Matches[0]
+            $Domain = $Matches[0]
 
-            Write-Debug -Message "The extracted domain name is $domain`n"
+            Write-Verbose -Message "The extracted domain name is $Domain"
             # Get the IP addresses of the DoH domain
-            $IPV4s = Get-IPv4DoHServerIPAddressWinSecureDNSMgr -Domain $domain
-            $IPV6s = Get-IPv6DoHServerIPAddressWinSecureDNSMgr -Domain $domain
+            $IPV4s = Get-IPv4DoHServerIPAddressWinSecureDNSMgr -Domain $Domain
+            $IPV6s = Get-IPv6DoHServerIPAddressWinSecureDNSMgr -Domain $Domain
 
             # If no IP addresses were found for either versions, exit the function
-            if ($null -eq $IPV4s -and $null -eq $IPV6s) {
-                Write-Error -Message "`nNo IP addresses were found for the domain $domain. Please make sure the domain is valid and try again, alternatively you can use the Set-BuiltInWinSecureDNS cmdlet to set one of the built-in DoH templates."
-                $ShouldExit = $true; return
+            if (($null -eq $IPV4s) -and ($null -eq $IPV6s)) {
+                Throw "No IP addresses were found for the domain $Domain. Please make sure the domain is valid and try again, alternatively you can use the Set-BuiltInWinSecureDNS cmdlet to set one of the built-in DoH templates."
+                [System.Boolean]$ShouldExit = $True
+                return
             }
         }
     }
@@ -138,23 +139,25 @@ function Set-CustomWinSecureDNS {
     }
 
     end {
+        if ($ShouldExit) { break }
+
         # clear DNS client Cache
         Clear-DnsClientCache
 
-        Write-Host "`nDNS over HTTPS has been successfully configured for $($ActiveNetworkInterface.Name) using $DoHTemplate template.`n" -ForegroundColor Green
+        Write-Host "DNS over HTTPS has been successfully configured for $($ActiveNetworkInterface.Name) using $DoHTemplate template." -ForegroundColor Green
 
         # Define the name and path of the task
-        $taskName = 'Dynamic DoH Server IP check'
-        $taskPath = '\DDoH\'
+        $TaskName = 'Dynamic DoH Server IP check'
+        $TaskPath = '\DDoH\'
 
         # Try to get the Dynamic DoH task and delete it if it exists
-        if (Get-ScheduledTask -TaskName $taskName -TaskPath $taskPath -ErrorAction SilentlyContinue) {
-            Unregister-ScheduledTask -TaskName $taskName -TaskPath $taskPath -Confirm:$false
+        if (Get-ScheduledTask -TaskName $TaskName -TaskPath $TaskPath -ErrorAction SilentlyContinue) {
+            Unregister-ScheduledTask -TaskName $TaskName -TaskPath $TaskPath -Confirm:$false
         }
     }
     <#
 .SYNOPSIS
-This script is a wrapper around the official Microsoft methods to configure DNS over HTTPS in Windows
+This function is a wrapper around the official Microsoft methods to configure DNS over HTTPS in Windows
 
 .LINK
 https://github.com/HotCakeX/WinSecureDNSMgr

@@ -58,7 +58,7 @@ function Get-ManualNetworkAdapterWinSecureDNS {
         foreach ($Number in $ValidNumbers) {
             # If the input is equal to a valid number, set the flag to true and break the loop
             if ($Choice -eq $Number) {
-                $IsValid = $true
+                $IsValid = $True
                 break
             }
         }

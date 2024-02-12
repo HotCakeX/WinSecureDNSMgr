@@ -1,6 +1,6 @@
 function Set-DynamicIPDoHServer {
   [Alias('Set-DDOH')]
-  [CmdletBinding(SupportsShouldProcess = $true)]
+  [CmdletBinding(SupportsShouldProcess = $True)]
   param (
     # checking to make sure the DoH template is valid and not one of the built-in ones
     [ValidatePattern('^https\:\/\/.+\..+\/.*', ErrorMessage = 'The value provided for the parameter DoHTemplate is not a valid DNS over HTTPS template. Please enter a valid DNS over HTTPS template that starts with https, has a TLD and a slash after it. E.g.: https://template.com/')]
@@ -11,14 +11,14 @@ function Set-DynamicIPDoHServer {
   begin {
 
     # Define the regex for extracting the domain name
-    $DomainExtractionRegex = '(?<=https\:\/\/).+?(?=\/)'
+    [System.String]$DomainExtractionRegex = '(?<=https\:\/\/).+?(?=\/)'
 
     # Test if the input matches the regex
     $DoHTemplate -match $DomainExtractionRegex
     # Access the matched value
-    $domain = $Matches[0]
+    [System.String]$Domain = $Matches[0]
 
-    Write-Debug -Message "The extracted domain name is $domain`n"
+    Write-Verbose -Message "The extracted domain name is $Domain"
 
   }
 
@@ -32,10 +32,10 @@ function Set-DynamicIPDoHServer {
       $ActiveNetworkInterface
 
       # check if there is any IP address already associated with "$DoHTemplate" template
-      $oldIPs = (Get-DnsClientDohServerAddress | Where-Object { $_.dohTemplate -eq $DoHTemplate }).serveraddress
+      $OldIPs = (Get-DnsClientDohServerAddress | Where-Object { $_.dohTemplate -eq $DoHTemplate }).serveraddress
       # if there is, remove them
-      if ($oldIPs) {
-        $oldIPs | ForEach-Object {
+      if ($OldIPs) {
+        $OldIPs | ForEach-Object {
           Remove-DnsClientDohServerAddress -ServerAddress $_
         }
       }
@@ -48,7 +48,7 @@ function Set-DynamicIPDoHServer {
       # Hyper-V assigns a new GUID to it, so it's better not to leave any leftover in the registry and clean up after ourselves
       Remove-Item 'HKLM:System\CurrentControlSet\Services\Dnscache\InterfaceSpecificParameters\*' -Recurse
 
-      [string[]]$NewIPsV4 = Get-IPv4DoHServerIPAddressWinSecureDNSMgr -Domain $domain
+      [System.String[]]$NewIPsV4 = Get-IPv4DoHServerIPAddressWinSecureDNSMgr -Domain $Domain
 
       # loop through each IPv4
       $NewIPsV4 | ForEach-Object {
@@ -62,7 +62,7 @@ function Set-DynamicIPDoHServer {
         New-ItemProperty -Path $Path -Name 'DohFlags' -Value 1 -PropertyType Qword -Force
       }
 
-      [string[]]$NewIPsV6 = Get-IPv6DoHServerIPAddressWinSecureDNSMgr -Domain $domain
+      [System.String[]]$NewIPsV6 = Get-IPv6DoHServerIPAddressWinSecureDNSMgr -Domain $Domain
 
       # loop through each IPv6
       $NewIPsV6 | ForEach-Object {
@@ -77,7 +77,7 @@ function Set-DynamicIPDoHServer {
       }
 
       # gather IPv4s and IPv6s all in one place
-      [string[]]$NewIPs = $NewIPsV4 + $NewIPsV6
+      [System.String[]]$NewIPs = $NewIPsV4 + $NewIPsV6
 
       # this is responsible for making the changes in Windows settings UI > Network and internet > $ActiveNetworkInterface.Name
       Set-DnsClientServerAddress -ServerAddresses $NewIPs -InterfaceIndex $ActiveNetworkInterface.ifIndex
@@ -86,7 +86,7 @@ function Set-DynamicIPDoHServer {
     }
 
     catch {
-      Write-Host 'These errors occured after running the module' -ForegroundColor white
+      Write-Host 'These errors occurred after running the module' -ForegroundColor white
       $_
       $ModuleErrors = $_
     }
@@ -100,11 +100,11 @@ function Set-DynamicIPDoHServer {
 
     $Log = New-Object System.Diagnostics.Eventing.Reader.EventLogConfiguration $LogName
     $Log.MaximumSizeInBytes = 2048000
-    $Log.IsEnabled = $true
+    $Log.IsEnabled = $True
     $Log.SaveChanges()
     if (!$ModuleErrors) {
 
-      Write-Debug "No errors occured when running the module, creating the scheduled task now if it's not already been created"
+      Write-Verbose "No errors occurred when running the module, creating the scheduled task now if it's not already been created"
 
       # create a scheduled task
       $Action = New-ScheduledTaskAction -Execute 'pwsh.exe' -Argument "-executionPolicy bypass -command `"Set-DynamicIPDoHServer -DoHTemplate '$DoHTemplate'`""
