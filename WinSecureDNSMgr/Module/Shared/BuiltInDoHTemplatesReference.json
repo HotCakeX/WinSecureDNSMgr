@@ -9,6 +9,26 @@
       "2606:4700:4700::1001": "https://cloudflare-dns.com/dns-query"
     }
   },
+  "CloudFlareFamily": {
+    "IPv4": {
+      "1.1.1.2": "https://family.cloudflare-dns.com/dns-query",
+      "1.0.0.2": "https://family.cloudflare-dns.com/dns-query"
+    },
+    "IPv6": {
+      "2606:4700:4700::1112": "https://family.cloudflare-dns.com/dns-query",
+      "2606:4700:4700::1002": "https://family.cloudflare-dns.com/dns-query"
+    }
+  },
+  "CloudFlareAntiMalware": {
+    "IPv4": {
+      "1.1.1.3": "https://security.cloudflare-dns.com/dns-query",
+      "1.0.0.3": "https://security.cloudflare-dns.com/dns-query"
+    },
+    "IPv6": {
+      "2606:4700:4700::1113": "https://security.cloudflare-dns.com/dns-query",
+      "2606:4700:4700::1003": "https://security.cloudflare-dns.com/dns-query"
+    }
+  },
   "Quad9": {
     "IPv4": {
       "9.9.9.9": "https://dns.quad9.net/dns-query",
@@ -17,6 +37,16 @@
     "IPv6": {
       "2620:fe::9": "https://dns.quad9.net/dns-query",
       "2620:fe::fe": "https://dns.quad9.net/dns-query"
+    }
+  },
+  "Quad9MalwareBlocking": {
+    "IPv4": {
+      "9.9.9.11": "https://dns11.quad9.net/dns-query",
+      "149.112.112.11": "https://dns11.quad9.net/dns-query"
+    },
+    "IPv6": {
+      "2620:fe::11": "https://dns11.quad9.net/dns-query",
+      "2620:fe::fe:11": "https://dns11.quad9.net/dns-query"
     }
   },
   "Google": {

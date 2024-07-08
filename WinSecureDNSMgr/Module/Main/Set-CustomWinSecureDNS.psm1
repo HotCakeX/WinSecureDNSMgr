@@ -13,32 +13,40 @@ function Set-CustomWinSecureDNS {
     )
     begin {
         # Detecting if Verbose switch is used
-        $PSBoundParameters.Verbose.IsPresent ? ([System.Boolean]$Verbose = $true) : ([System.Boolean]$Verbose = $false) | Out-Null
+        [System.Boolean]$Verbose = $PSBoundParameters.Verbose.IsPresent ? $true : $false
 
         # Importing the $PSDefaultParameterValues to the current session, prior to everything else
         . "$WinSecureDNSMgrModuleRootPath\MainExt\PSDefaultParameterValues.ps1"
 
         # Importing the required sub-modules
-        Import-Module -Name "$WinSecureDNSMgrModuleRootPath\Shared\Get-ActiveNetworkAdapterWinSecureDNS.psm1" -Force
-        Import-Module -Name "$WinSecureDNSMgrModuleRootPath\Shared\Get-ManualNetworkAdapterWinSecureDNS.psm1" -Force
-        Import-Module -Name "$WinSecureDNSMgrModuleRootPath\Shared\Select-Option.psm1" -Force
-        Import-Module -Name "$WinSecureDNSMgrModuleRootPath\Shared\Get-IPv6DoHServerIPAddressWinSecureDNSMgr.psm1" -Force
-        Import-Module -Name "$WinSecureDNSMgrModuleRootPath\Shared\Get-IPv4DoHServerIPAddressWinSecureDNSMgr.psm1" -Force
+        Import-Module -Force -FullyQualifiedName @(
+            "$WinSecureDNSMgrModuleRootPath\Shared\Get-ActiveNetworkAdapterWinSecureDNS.psm1",
+            "$WinSecureDNSMgrModuleRootPath\Shared\Get-ManualNetworkAdapterWinSecureDNS.psm1",
+            "$WinSecureDNSMgrModuleRootPath\Shared\Select-Option.psm1",
+            "$WinSecureDNSMgrModuleRootPath\Shared\Get-IPv6DoHServerIPAddressWinSecureDNSMgr.psm1",
+            "$WinSecureDNSMgrModuleRootPath\Shared\Get-IPv4DoHServerIPAddressWinSecureDNSMgr.psm1"
+        )
 
         [System.Boolean]$AutoDetectDoHIPs = $false
 
+        # This service shouldn't be disabled
+        # https://github.com/HotCakeX/WinSecureDNSMgr/issues/7
+        if (!((Get-Service -Name 'Dnscache').StartType -ne 'Disabled')) {
+            throw 'The DNS Client service status is disabled. Please start the service and try again.'
+        }
+
         # If IP addresses were provided manually by user, verify their version
         if ($IPV4s) {
-            $IPV4s | ForEach-Object -Process {
-                if ($_.AddressFamily -ne 'InterNetwork') {
-                    throw "The IP address $_ is not a valid IPv4 address."
+            foreach ($Item in $IPV4s) {
+                if ($Item.AddressFamily -ne 'InterNetwork') {
+                    throw "The IP address $Item is not a valid IPv4 address."
                 }
             }
         }
         if ($IPV6s) {
-            $IPV6s | ForEach-Object -Process {
-                if ($_.AddressFamily -ne 'InterNetworkV6') {
-                    throw "The IP address $_ is not a valid IPv6 address."
+            foreach ($Item in $IPV6s) {
+                if ($Item.AddressFamily -ne 'InterNetworkV6') {
+                    throw "The IP address $Item is not a valid IPv6 address."
                 }
             }
         }
@@ -139,12 +147,12 @@ function Set-CustomWinSecureDNS {
                 [System.String]$PathV4 = "Registry::HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\Dnscache\InterfaceSpecificParameters\$($ActiveNetworkInterface.InterfaceGuid)\DohInterfaceSettings\Doh\$_"
 
                 Write-Verbose -Message 'Associating the new IPv4s with the selected DoH template in Windows DoH template predefined list'
-                Add-DnsClientDohServerAddress -ServerAddress $_ -DohTemplate $DoHTemplate -AllowFallbackToUdp $False -AutoUpgrade $True | Out-Null
+                $null = Add-DnsClientDohServerAddress -ServerAddress $_ -DohTemplate $DoHTemplate -AllowFallbackToUdp $False -AutoUpgrade $True
 
                 # add DoH settings for the specified Network adapter based on its GUID in registry
                 # value 1 for DohFlags key means use automatic template for DoH, 2 means manual template, since we add our template to Windows, it's predefined so we use value 1
-                New-Item -Path $PathV4 -Force | Out-Null
-                New-ItemProperty -Path $PathV4 -Name 'DohFlags' -Value '1' -PropertyType 'Qword' -Force | Out-Null
+                $null = New-Item -Path $PathV4 -Force
+                $null = New-ItemProperty -Path $PathV4 -Name 'DohFlags' -Value '1' -PropertyType 'Qword' -Force
             }
         }
 
@@ -158,12 +166,12 @@ function Set-CustomWinSecureDNS {
                 [System.String]$PathV6 = "Registry::HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\Dnscache\InterfaceSpecificParameters\$($ActiveNetworkInterface.InterfaceGuid)\DohInterfaceSettings\Doh6\$_"
 
                 Write-Verbose -Message 'Associating the new IPv6s with the selected DoH template in Windows DoH template predefined list'
-                Add-DnsClientDohServerAddress -ServerAddress $_ -DohTemplate $DoHTemplate -AllowFallbackToUdp $False -AutoUpgrade $True | Out-Null
+                $null = Add-DnsClientDohServerAddress -ServerAddress $_ -DohTemplate $DoHTemplate -AllowFallbackToUdp $False -AutoUpgrade $True
 
                 # add DoH settings for the specified Network adapter based on its GUID in registry
                 # value 1 for DohFlags key means use automatic template for DoH, 2 means manual template, since we already added our template to Windows, it's considered predefined, so we use value 1
-                New-Item -Path $PathV6 -Force | Out-Null
-                New-ItemProperty -Path $PathV6 -Name 'DohFlags' -Value '1' -PropertyType 'Qword' -Force | Out-Null
+                $null = New-Item -Path $PathV6 -Force
+                $null = New-ItemProperty -Path $PathV6 -Name 'DohFlags' -Value '1' -PropertyType 'Qword' -Force
             }
         }
 

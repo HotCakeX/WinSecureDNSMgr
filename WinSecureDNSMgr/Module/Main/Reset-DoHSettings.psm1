@@ -7,10 +7,17 @@ Function Reset-DoHSettings {
     # Importing the $PSDefaultParameterValues to the current session, prior to everything else
     . "$WinSecureDNSMgrModuleRootPath\MainExt\PSDefaultParameterValues.ps1"
 
+    # This service shouldn't be disabled
+    # https://github.com/HotCakeX/WinSecureDNSMgr/issues/7
+    if (!((Get-Service -Name 'Dnscache').StartType -ne 'Disabled')) {
+        throw 'The DNS Client service status is disabled. Please start the service and try again.'
+    }
+
     Write-Verbose -Message 'Displaying non-system DoH templates.'
-    Get-DnsClientDohServerAddress | Where-Object -FilterScript { $_.DohTemplate -notin $BuiltInDoHTemplatesReference.Values.Values.Values } |
-    ForEach-Object -Process {
-        Write-Verbose -Message "Non-System DoH template with the Server Address $($_.ServerAddress) and Domain $($_.DohTemplate) detected."
+    foreach ($DNSAddr in Get-DnsClientDohServerAddress) {
+        if ($DNSAddr.DohTemplate -notin $BuiltInDoHTemplatesReference.Values.Values.Values) {
+            Write-Verbose -Message "Non-System DoH template with the Server Address $($_.ServerAddress) and Domain $($_.DohTemplate) detected."
+        }
     }
 
     Write-Verbose -Message 'Resetting the DNS server IP addresses of all network adapters to the default values'
@@ -19,8 +26,8 @@ Function Reset-DoHSettings {
     }
 
     Write-Verbose -Message 'Removing all DoH templates from the system.'
-    Get-DnsClientDohServerAddress | ForEach-Object -Process {
-        Remove-DnsClientDohServerAddress -InputObject $_
+    foreach ($Item in Get-DnsClientDohServerAddress) {
+        Remove-DnsClientDohServerAddress -InputObject $Item
     }
 
     Write-Verbose -Message 'Restoring the default Windows DoH templates.'
@@ -31,7 +38,7 @@ Function Reset-DoHSettings {
 
             # Loop over each IPv4 address and its DoH domain
             foreach ($IPv4 in $IPv4s.Value.GetEnumerator()) {
-                Add-DnsClientDohServerAddress -AllowFallbackToUdp $false -AutoUpgrade $True -ServerAddress $IPv4.Name -DohTemplate $IPv4.Value | Out-Null
+                $null = Add-DnsClientDohServerAddress -AllowFallbackToUdp $false -AutoUpgrade $True -ServerAddress $IPv4.Name -DohTemplate $IPv4.Value
             }
         }
 
@@ -40,7 +47,7 @@ Function Reset-DoHSettings {
 
             # Loop over each IPv6 address and its DoH domain
             foreach ($IPv6 in $IPv6s.Value.GetEnumerator()) {
-                Add-DnsClientDohServerAddress -AllowFallbackToUdp $false -AutoUpgrade $True -ServerAddress $IPv6.Name -DohTemplate $IPv6.Value | Out-Null
+                $null = Add-DnsClientDohServerAddress -AllowFallbackToUdp $false -AutoUpgrade $True -ServerAddress $IPv6.Name -DohTemplate $IPv6.Value
             }
         }
     }

@@ -59,19 +59,7 @@ https://github.com/HotCakeX/WinSecureDNSMgr
 '@
 
     # Minimum version of the PowerShell engine required by this module
-    PowerShellVersion    = '7.4.2'
-
-    # Name of the PowerShell host required by this module
-    # PowerShellHostName = ''
-
-    # Minimum version of the PowerShell host required by this module
-    # PowerShellHostVersion = ''
-
-    # Minimum version of Microsoft .NET Framework required by this module. This prerequisite is valid for the PowerShell Desktop edition only.
-    # DotNetFrameworkVersion = ''
-
-    # Minimum version of the common language runtime (CLR) required by this module. This prerequisite is valid for the PowerShell Desktop edition only.
-    # ClrVersion = ''
+    PowerShellVersion    = '7.4.1'
 
     # Processor architecture (None, X86, Amd64) required by this module
     # ProcessorArchitecture = ''
@@ -84,12 +72,6 @@ https://github.com/HotCakeX/WinSecureDNSMgr
 
     # Script files (.ps1) that are run in the caller's environment prior to importing this module.
     # ScriptsToProcess     = @()
-
-    # Type files (.ps1xml) to be loaded when importing this module
-    # TypesToProcess = @()
-
-    # Format files (.ps1xml) to be loaded when importing this module
-    # FormatsToProcess = @()
 
     # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
     NestedModules        = @('Main\Set-BuiltInWinSecureDNS.psm1',
@@ -119,7 +101,7 @@ https://github.com/HotCakeX/WinSecureDNSMgr
     # DscResourcesToExport = @()
 
     # List of all modules packaged with this module
-    ModuleList           = @()
+    # ModuleList           = @()
 
     # List of all files packaged with this module
     # FileList             = @()
