@@ -4,7 +4,7 @@
     RootModule           = 'WinSecureDNSMgr.psm1'
 
     # Version number of this module.
-    ModuleVersion        = '0.0.5'
+    ModuleVersion        = '0.0.6'
 
     # Supported PSEditions
     CompatiblePSEditions = @('Core')
@@ -59,7 +59,7 @@ https://github.com/HotCakeX/WinSecureDNSMgr
 '@
 
     # Minimum version of the PowerShell engine required by this module
-    PowerShellVersion    = '7.4.1'
+    PowerShellVersion    = '7.4.2'
 
     # Name of the PowerShell host required by this module
     # PowerShellHostName = ''
@@ -83,7 +83,7 @@ https://github.com/HotCakeX/WinSecureDNSMgr
     # RequiredAssemblies = @()
 
     # Script files (.ps1) that are run in the caller's environment prior to importing this module.
-    ScriptsToProcess     = @('Preloader.ps1')
+    # ScriptsToProcess     = @()
 
     # Type files (.ps1xml) to be loaded when importing this module
     # TypesToProcess = @()
@@ -122,24 +122,7 @@ https://github.com/HotCakeX/WinSecureDNSMgr
     ModuleList           = @()
 
     # List of all files packaged with this module
-    FileList             = @(
-        'WinSecureDNSMgr.psm1',
-        'WinSecureDNSMgr.psd1',
-        'Preloader.ps1',
-        'Shared\Get-ActiveNetworkAdapterWinSecureDNS.psm1',
-        'Shared\Get-ManualNetworkAdapterWinSecureDNS.psm1',
-        'Shared\BuiltInDoHTemplatesReference.json'
-        'Shared\ColorFunctions.psm1'
-        'Shared\Get-IPv4DoHServerIPAddressWinSecureDNSMgr.psm1'
-        'Shared\Get-IPv6DoHServerIPAddressWinSecureDNSMgr.psm1'
-        'Shared\Get-DoHIPs.psm1'
-        'Shared\Select-Option.psm1'
-        'Main\Set-BuiltInWinSecureDNS.psm1',
-        'Main\Set-CustomWinSecureDNS.psm1',
-        'Main\Set-DynamicIPDoHServer.psm1',
-        'Main\Reset-DoHSettings.psm1',
-        'MainExt\PSDefaultParameterValues.ps1'
-    )
+    # FileList             = @()
 
     # Private data to pass to the module specified in RootModule/ModuleToProcess. This may also contain a PSData hashtable with additional module metadata used by PowerShell.
     PrivateData          = @{
