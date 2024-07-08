@@ -58,6 +58,7 @@
 			"devicepath",
 			"DFCI",
 			"DISM",
+			"Dnscache",
 			"DNSSEC",
 			"domainfirewall",
 			"Dont",

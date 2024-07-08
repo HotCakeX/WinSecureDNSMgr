@@ -3,12 +3,12 @@ Function Set-BuiltInWinSecureDNS {
     [CmdletBinding()]
     [OutputType([System.String], [Microsoft.Management.Infrastructure.CimInstance])]
     param (
-        [ValidateSet('Cloudflare', 'Google', 'Quad9', ErrorMessage = 'The selected DNS over HTTPS provider is not supported by Windows. Please select a different provider or use the Set-CustomWinSecureDNS cmdlet.')]
+        [ValidateSet('Cloudflare', 'CloudFlareFamily', 'CloudFlareAntiMalware', 'Quad9' , 'Quad9MalwareBlocking', 'Google', ErrorMessage = 'The selected DNS over HTTPS provider is not supported by Windows. Please select a different provider or use the Set-CustomWinSecureDNS cmdlet.')]
         [Parameter(Mandatory = $false)][System.String]$DoHProvider = 'Cloudflare'
     )
     begin {
         # Detecting if Verbose switch is used
-        $PSBoundParameters.Verbose.IsPresent ? ([System.Boolean]$Verbose = $true) : ([System.Boolean]$Verbose = $false) | Out-Null
+        [System.Boolean]$Verbose = $PSBoundParameters.Verbose.IsPresent ? $true : $false
 
         # Importing the $PSDefaultParameterValues to the current session, prior to everything else
         . "$WinSecureDNSMgrModuleRootPath\MainExt\PSDefaultParameterValues.ps1"
@@ -17,6 +17,12 @@ Function Set-BuiltInWinSecureDNS {
         Import-Module -Name "$WinSecureDNSMgrModuleRootPath\Shared\Get-ActiveNetworkAdapterWinSecureDNS.psm1" -Force
         Import-Module -Name "$WinSecureDNSMgrModuleRootPath\Shared\Get-ManualNetworkAdapterWinSecureDNS.psm1" -Force
         Import-Module -Name "$WinSecureDNSMgrModuleRootPath\Shared\Select-Option.psm1" -Force
+
+        # This service shouldn't be disabled
+        # https://github.com/HotCakeX/WinSecureDNSMgr/issues/7
+        if (!((Get-Service -Name 'Dnscache').StartType -ne 'Disabled')) {
+            throw 'The DNS Client service status is disabled. Please start the service and try again.'
+        }
 
         # Get the DoH domain from the hashtable - Since all of the DoH domains are identical for the same provider, only getting the first item in the array
         [System.String]$DetectedDoHTemplate = ($BuiltInDoHTemplatesReference.GetEnumerator() | Where-Object { $_.Key -eq $DoHProvider }).Value.Values.Values[0]
@@ -60,39 +66,105 @@ Function Set-BuiltInWinSecureDNS {
         # delete all other previous DoH settings for ALL Interface - Windows behavior in settings when changing DoH settings is to delete all DoH settings for the interface we are modifying
         # but we need to delete all DoH settings for ALL interfaces in here because every time we virtualize a network adapter with external switch of Hyper-V,
         # Hyper-V assigns a new GUID to it, so it's better not to leave any leftover in the registry and clean up after ourselves
-        Remove-Item -Path 'Registry::HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\Dnscache\InterfaceSpecificParameters\*' -Recurse | Out-Null
+        $null = Remove-Item -Path 'Registry::HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\Dnscache\InterfaceSpecificParameters\*' -Recurse
 
-        [System.String[]]$DoHIPs = (Get-DnsClientDohServerAddress | Where-Object -FilterScript { $_.DohTemplate -eq $DetectedDoHTemplate }).ServerAddress
+        # Define empty arrays to store IPv4 and IPv6 addresses
+        [System.String[]]$DoHIPs = @()
+        [System.String[]]$IPV4s = @()
+        [System.String[]]$IPV6s = @()
+        [System.Boolean]$IsExtraProvider = $false
 
-        $DoHIPs | ForEach-Object -Process {
+        # If using a provider that is not available by default in Windows then get its IP addresses from the JSON file
+        if ($DoHProvider -in 'CloudFlareFamily', 'CloudFlareAntiMalware', 'Quad9MalwareBlocking') {
 
-            # Use the IPAddress type so we can get AddressFamily property
-            $IP = [System.Net.IPAddress]$_
+            $IsExtraProvider = $true
 
-            if ($IP.AddressFamily -eq 'InterNetwork') {
-
-                # defining registry path for DoH settings of the $ActiveNetworkInterface based on its GUID for IPv4
-                [System.String]$PathV4 = "Registry::HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\Dnscache\InterfaceSpecificParameters\$($ActiveNetworkInterface.InterfaceGuid)\DohInterfaceSettings\Doh\$_"
-
-                # add DoH settings for the specified Network adapter based on its GUID in registry
-                # value 1 for DohFlags key means use automatic template for DoH, 2 means manual template, since we add our template to Windows, it's predefined so we use value 1
-                New-Item -Path $PathV4 -Force | Out-Null
-                New-ItemProperty -Path $PathV4 -Name 'DohFlags' -Value 1 -PropertyType 'Qword' -Force | Out-Null
-
-                Set-DnsClientDohServerAddress -ServerAddress $_ -DohTemplate $DetectedDoHTemplate -AllowFallbackToUdp $False -AutoUpgrade $True
+            [System.String[]]$DoHIPs = foreach ($Item in $BuiltInDoHTemplatesReference.GetEnumerator()) {
+                if ($Item.Key -eq $DoHProvider) {
+                    $Item.Value.Values.Keys
+                }
             }
 
-            elseif ($IP.AddressFamily -eq 'InterNetworkV6') {
+            # Detect version of each IP address and store them in the appropriate array
+            foreach ($IP in $DoHIPs) {
+                if (([System.Net.IPAddress]$IP).AddressFamily -eq 'InterNetwork') {
+                    $IPV4s += $IP
+                }
+                elseif (([System.Net.IPAddress]$IP).AddressFamily -eq 'InterNetworkV6') {
+                    $IPV6s += $IP
+                }
+            }
 
-                # defining registry path for DoH settings of the $ActiveNetworkInterface based on its GUID for IPv6
-                [System.String]$PathV6 = "Registry::HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\Dnscache\InterfaceSpecificParameters\$($ActiveNetworkInterface.InterfaceGuid)\DohInterfaceSettings\Doh6\$_"
+            # check if there is any IP address already associated with $DetectedDoHTemplate and if so, delete them
+            foreach ($Item in Get-DnsClientDohServerAddress) {
+                if ($Item.dohTemplate -eq $DetectedDoHTemplate) {
+                    foreach ($OldIP in $Item.ServerAddress) {
+                        Remove-DnsClientDohServerAddress -ServerAddress $OldIP
+                    }
+                }
+            }
 
-                # add DoH settings for the specified Network adapter based on its GUID in registry
-                # value 1 for DohFlags key means use automatic template for DoH, 2 means manual template, since we already added our template to Windows, it's considered predefined, so we use value 1
-                New-Item -Path $PathV6 -Force | Out-Null
-                New-ItemProperty -Path $PathV6 -Name 'DohFlags' -Value 1 -PropertyType 'Qword' -Force | Out-Null
+            Write-Verbose -Message 'Checking if the IP addresses of the currently selected DoH domain already exist and then deleting them'
+            foreach ($Item in Get-DnsClientDohServerAddress) {
+                if ($Item.ServerAddress -in $DoHIPs) {
+                    Remove-DnsClientDohServerAddress -ServerAddress $Item.ServerAddress
+                }
+            }
 
-                Set-DnsClientDohServerAddress -ServerAddress $_ -DohTemplate $DetectedDoHTemplate -AllowFallbackToUdp $False -AutoUpgrade $True
+        }
+        else {
+            # Get the IP addresses associated with the built-in DOH servers
+            [System.String[]]$DoHIPs = foreach ($Item in Get-DnsClientDohServerAddress) {
+                if ($Item.DohTemplate -eq $DetectedDoHTemplate) {
+                    $Item.ServerAddress
+                }
+            }
+
+            # Detect version of each IP address and store them in the appropriate array
+            foreach ($IP in $DoHIPs) {
+                if (([System.Net.IPAddress]$IP).AddressFamily -eq 'InterNetwork') {
+                    $IPV4s += $IP
+                }
+                elseif (([System.Net.IPAddress]$IP).AddressFamily -eq 'InterNetworkV6') {
+                    $IPV6s += $IP
+                }
+            }
+        }
+
+        foreach ($IPV4 in $IPV4s) {
+            # defining registry path for DoH settings of the $ActiveNetworkInterface based on its GUID for IPv4
+            [System.String]$PathV4 = "Registry::HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\Dnscache\InterfaceSpecificParameters\$($ActiveNetworkInterface.InterfaceGuid)\DohInterfaceSettings\Doh\$IPV4"
+
+            # add DoH settings for the specified Network adapter based on its GUID in registry
+            # value 1 for DohFlags key means use automatic template for DoH, 2 means manual template, since we add our template to Windows, it's predefined so we use value 1
+            $null = New-Item -Path $PathV4 -Force
+            $null = New-ItemProperty -Path $PathV4 -Name 'DohFlags' -Value 1 -PropertyType 'Qword' -Force
+
+            if (!$IsExtraProvider) {
+                Set-DnsClientDohServerAddress -ServerAddress $IPV4 -DohTemplate $DetectedDoHTemplate -AllowFallbackToUdp $False -AutoUpgrade $True
+            }
+            else {
+                Write-Verbose -Message 'Associating the new IPv4s with the selected DoH template in Windows DoH template predefined list'
+                $null = Add-DnsClientDohServerAddress -ServerAddress $IPV4 -DohTemplate $DetectedDoHTemplate -AllowFallbackToUdp $False -AutoUpgrade $True
+            }
+        }
+
+        foreach ($IPV6 in $IPV6s) {
+
+            # defining registry path for DoH settings of the $ActiveNetworkInterface based on its GUID for IPv6
+            [System.String]$PathV6 = "Registry::HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\Dnscache\InterfaceSpecificParameters\$($ActiveNetworkInterface.InterfaceGuid)\DohInterfaceSettings\Doh6\$IPV6"
+
+            # add DoH settings for the specified Network adapter based on its GUID in registry
+            # value 1 for DohFlags key means use automatic template for DoH, 2 means manual template, since we already added our template to Windows, it's considered predefined, so we use value 1
+            $null = New-Item -Path $PathV6 -Force
+            $null = New-ItemProperty -Path $PathV6 -Name 'DohFlags' -Value 1 -PropertyType 'Qword' -Force
+
+            if (!$IsExtraProvider) {
+                Set-DnsClientDohServerAddress -ServerAddress $IPV6 -DohTemplate $DetectedDoHTemplate -AllowFallbackToUdp $False -AutoUpgrade $True
+            }
+            else {
+                Write-Verbose -Message 'Associating the new IPv4s with the selected DoH template in Windows DoH template predefined list'
+                $null = Add-DnsClientDohServerAddress -ServerAddress $IPV6 -DohTemplate $DetectedDoHTemplate -AllowFallbackToUdp $False -AutoUpgrade $True
             }
         }
 

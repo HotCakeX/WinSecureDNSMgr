@@ -4,7 +4,7 @@
     RootModule           = 'WinSecureDNSMgr.psm1'
 
     # Version number of this module.
-    ModuleVersion        = '0.0.5'
+    ModuleVersion        = '0.0.6'
 
     # Supported PSEditions
     CompatiblePSEditions = @('Core')
@@ -61,18 +61,6 @@ https://github.com/HotCakeX/WinSecureDNSMgr
     # Minimum version of the PowerShell engine required by this module
     PowerShellVersion    = '7.4.1'
 
-    # Name of the PowerShell host required by this module
-    # PowerShellHostName = ''
-
-    # Minimum version of the PowerShell host required by this module
-    # PowerShellHostVersion = ''
-
-    # Minimum version of Microsoft .NET Framework required by this module. This prerequisite is valid for the PowerShell Desktop edition only.
-    # DotNetFrameworkVersion = ''
-
-    # Minimum version of the common language runtime (CLR) required by this module. This prerequisite is valid for the PowerShell Desktop edition only.
-    # ClrVersion = ''
-
     # Processor architecture (None, X86, Amd64) required by this module
     # ProcessorArchitecture = ''
 
@@ -83,13 +71,7 @@ https://github.com/HotCakeX/WinSecureDNSMgr
     # RequiredAssemblies = @()
 
     # Script files (.ps1) that are run in the caller's environment prior to importing this module.
-    ScriptsToProcess     = @('Preloader.ps1')
-
-    # Type files (.ps1xml) to be loaded when importing this module
-    # TypesToProcess = @()
-
-    # Format files (.ps1xml) to be loaded when importing this module
-    # FormatsToProcess = @()
+    # ScriptsToProcess     = @()
 
     # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
     NestedModules        = @('Main\Set-BuiltInWinSecureDNS.psm1',
@@ -119,27 +101,10 @@ https://github.com/HotCakeX/WinSecureDNSMgr
     # DscResourcesToExport = @()
 
     # List of all modules packaged with this module
-    ModuleList           = @()
+    # ModuleList           = @()
 
     # List of all files packaged with this module
-    FileList             = @(
-        'WinSecureDNSMgr.psm1',
-        'WinSecureDNSMgr.psd1',
-        'Preloader.ps1',
-        'Shared\Get-ActiveNetworkAdapterWinSecureDNS.psm1',
-        'Shared\Get-ManualNetworkAdapterWinSecureDNS.psm1',
-        'Shared\BuiltInDoHTemplatesReference.json'
-        'Shared\ColorFunctions.psm1'
-        'Shared\Get-IPv4DoHServerIPAddressWinSecureDNSMgr.psm1'
-        'Shared\Get-IPv6DoHServerIPAddressWinSecureDNSMgr.psm1'
-        'Shared\Get-DoHIPs.psm1'
-        'Shared\Select-Option.psm1'
-        'Main\Set-BuiltInWinSecureDNS.psm1',
-        'Main\Set-CustomWinSecureDNS.psm1',
-        'Main\Set-DynamicIPDoHServer.psm1',
-        'Main\Reset-DoHSettings.psm1',
-        'MainExt\PSDefaultParameterValues.ps1'
-    )
+    # FileList             = @()
 
     # Private data to pass to the module specified in RootModule/ModuleToProcess. This may also contain a PSData hashtable with additional module metadata used by PowerShell.
     PrivateData          = @{
